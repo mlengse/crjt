@@ -1,0 +1,25 @@
+{
+  "name": "crjt",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mlengse/crjt.git"
+  },
+  "author": "mlengse",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mlengse/crjt/issues"
+  },
+  "homepage": "https://github.com/mlengse/crjt#readme",
+  "dependencies": {
+    "dotenv": "^10.0.0",
+    "moment": "^2.29.1",
+    "ora": "^5.4.1",
+    "puppeteer-core": "^10.2.0"
+  }
+}
