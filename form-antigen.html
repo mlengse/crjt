@@ -1,0 +1,511 @@
+<div class="card">
+  <div class="card-header container-fluid">
+      <div class="row">
+          <div class="col-md-8" id="option-confirmed">
+              <div class="row">
+                                      <div class="col-md-2">
+                      <label for="name">Tanggal Input <small class="text-danger">Wajib</small></label>
+                      <input type="text" class="form-control" name="filterByDateAntigen" id="filterByDateAntigen" style="background-color: white;"
+                             data-language="id"
+                             data-date-format="dd-mm-yyyy"
+                             data-position="bottom left"
+                             autocomplete="off"
+                             placeholder="dd-mm-yyyy">
+                  </div>
+                  <div class="col-md-2">
+                      <label for="name">Status <small class="text-danger"></small></label>
+                      <select name="filterByStatusAntigen" id="filterByStatusAntigen" class="form-control" style="width: 100%">
+                          <option value="0">Semua</option>
+                          <option value="2">Terkirim Ke All Record</option>
+                          <option value="1">Belum Terkirim Ke All Record</option>
+                          <option value="3">Tidak Terkirim Ke All Record</option>
+                      </select>
+                  </div>
+                  <button class="btn btn-success" id="refresh-table-result-swab" title="Refresh Data Yang Tampil"><i class="fa fa-redo-alt"></i> </button>
+              </div>
+          </div>
+          <div class="col-md-4">
+              <div class="d-flex flex-wrap justify-content-end">
+                  <button id="sendArAntigen" title="Kirimkan Data Ke Sistem All Record TC19" class="btn btn-primary m-1"><i class="fa fa-paper-plane "></i> KIRIM KE AR-TC19</button>
+                                          <button data-src="https://admin.corona.jatengprov.go.id/all-record/antigen/create" data-fancybox data-type="ajax" data-toggle="tooltip" data-placement="top" title="Tambah Kirim Spesimen" class="btn btn-success m-1"><i class="fa fa-plus"></i> TAMBAH DATA</button>
+                      <button class="btn btn-info m-1" data-toggle="modal" data-target="#sendAntigenModalDownloadExcel"><i class="fa fa-download"></i></button>
+                  
+              </div>
+          </div>
+      </div>
+  </div>
+  <div class="card-body">
+      <div class="row" style="padding-bottom: 20px;">
+          <div class="rectangle"></div> Belum Dikirm
+          <div class="rectangle" style="background-color: #FFF8EB;"></div> Sudah Dikirm
+          <div class="rectangle" style="background-color: #bdc3c7;"></div> Tidak Terkirim Ke All Record
+      </div>
+      <div class="table-responsive">
+          <table id="datatable-antigen" class="table table-striped table-bordered order-column">
+              <thead>
+              <tr>
+                  <th rowspan="2">No</th>
+                  <th rowspan="2">Identitas</th>
+                  <th rowspan="2">Nama</th>
+                  <th rowspan="2">JK</th>
+                  <th rowspan="2">Usia</th>
+                  <th colspan="6" class="text-center">Domisili</th>
+                  <th rowspan="2" class="text-center">Faskes</th>
+                  <th colspan="8" class="text-center">Pemeriksaan</th>
+                  <th colspan="3" class="text-center">Tanggal</th>
+                  <th rowspan="2">Aksi</th>
+              </tr>
+              <tr>
+                  <th>Provinsi</th>
+                  <th>Kab/Kota</th>
+                  <th>Kecamatan</th>
+                  <th>Kelurahan</th>
+                  <th>RT/RW</th>
+                  <th>Alamat</th>
+                  <th>No Periksa</th>
+                  <th>Periode</th>
+                  <th>Jenis</th>
+                  <th>Hasil</th>
+                  <th>Tujuan</th>
+                  <th>Pembayaran</th>
+                  <th>Kriteria</th>
+                  <th>Keterangan</th>
+                  <th>Gejala</th>
+                  <th>Test</th>
+                  <th>Kirim All Record</th>
+              </tr>
+              </thead>
+          </table>
+      </div>
+  </div>
+</div>
+
+<div class="modal fade" id="sendAntigenModalDownloadExcel" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabel">Download Excel</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+              </button>
+          </div>
+          <div class="modal-body">
+              <div class="form-group">
+                  <label for="antigenDaterangeDownloadExcel">Pilih Range Tanggal Input</label>
+                  <input type="text" class="form-control" id="antigenDaterangeDownloadExcel" data-range="true"
+                         data-date-format="dd-mm-yyyy"
+                         data-multiple-dates-separator=" s/d "
+                         data-language="id"
+                         data-position="bottom left"
+                         autocomplete="off"
+                         placeholder="Range Tanggal"
+                         value="16-08-2021 s/d 17-08-2021">
+              </div>
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-primary" id="btn-download-excel">Download</button>
+          </div>
+      </div>
+  </div>
+</div>
+<script type="text/javascript">
+  const listPurpose = [
+      {
+          'id': 1,
+          'text': "Suspek"
+      },
+      {
+          'id': 2,
+          'text': "Kontak Erat"
+      },
+      {
+          "text": "Screening",
+          "children": [
+              {
+                  'id': 20,
+                  'text': "Pelaku Perjalanan"
+              },
+              {
+                  'id': 21,
+                  'text': "Alasan Medis"
+              },
+              {
+                  'id': 22,
+                  'text': "Alasan Lainnya"
+              }
+          ]
+      }
+  ];
+  const listPurposeA = [
+      {
+          "text": "Screening",
+          "children": [
+              {
+                  'id': 20,
+                  'text': "Pelaku Perjalanan"
+              },
+              {
+                  'id': 21,
+                  'text': "Alasan Medis"
+              },
+              {
+                  'id': 22,
+                  'text': "Alasan Lainnya"
+              }
+          ]
+      }
+  ];
+  let status_id;
+  let criteria;
+  function setKeterangan(){
+      let result = $('input[name="result"]:checked').val();
+      criteria = $('#criteria').val();
+      let keterangan = ""
+      let show_allert = false;
+      if(criteria == 'A'){
+          if(result == 'POSITIF' ) keterangan = "Dilanjutkan SWAB PCR"
+          else keterangan = "Dianggap Tidak COVID-19"
+      }else if (criteria == 'B'){
+          if(result == 'POSITIF' ){
+              keterangan = "Terkonfirmasi COVID-19"
+              show_allert = true
+          }
+          else keterangan = "Dilanjutkan SWAB PCR"
+      }else if (criteria == 'C'){
+          if(result == 'POSITIF' ) {
+              keterangan = "Terkonfirmasi COVID-19"
+              show_allert = true
+          }
+          else keterangan = "Ulangi Pemeriksaan RDT-Ag"
+      }
+
+      if(show_allert == true){
+          Swal.fire(
+              'Terkonfirmasi COVID-19!',
+              "Harap mengubah status pasien menjadi Terkonfirmasi Isolasi / Dirawat !",
+              'info'
+          )
+      }
+
+      $("#keterangan").val(keterangan)
+  }
+
+  function setPurpose(){
+      $("#purpose").select2().empty();
+      if(criteria == 'A'){
+          $("#purpose").select2({
+              data:listPurposeA
+          }).trigger('change.select2')
+      }else{
+          $("#purpose").select2({
+              data:listPurpose
+          }).trigger('change.select2')
+      }
+
+      autoSelectPurpose()
+  }
+
+  function autoSelectPurpose(currentPurpose = 0,_criteria=0){
+      if((!isEmpty(status_id) && !isEmpty(criteria)) || currentPurpose != 0){
+          if(criteria == 'A' || _criteria == 'A'){
+              if(inArray(status_id,[1,2,3,4,10,14,15]) || currentPurpose ==21){
+                  $("#purpose").val(21).trigger('change')
+              } else if (status_id == 21 || currentPurpose ==22){
+                  $("#purpose").val(20).trigger('change')
+              }else{
+                  $("#purpose").val(22).trigger('change')
+              }
+          }else{
+              if(inArray(status_id,[1,2,3,4,10,14,15]) || currentPurpose ==21){
+                  $("#purpose").val(21).trigger('change')
+              } else if(inArray(status_id,[11,12,13,14,18,19]) || currentPurpose ==1){
+                  $("#purpose").val(1).trigger('change')
+              }
+              else if(inArray(status_id,[5,6]) || currentPurpose ==2){
+                  $("#purpose").val(2).trigger('change')
+              }else if (status_id == 21 || currentPurpose == 20){
+                  $("#purpose").val(20).trigger('change')
+              }else {
+                  $("#purpose").val(22).trigger('change')
+              }
+          }
+      }
+  }
+  function inArray(value,listArray){
+      let result = false
+      listArray.forEach(i=>{
+          if(i == value){
+              result = true
+              return false ;
+          }
+      })
+      return result
+  }
+  $('document').ready(function() {
+      var now = new Date();
+
+      $('#filterByDateAntigen').datepicker({
+          todayButton: new Date(),
+          autoClose:true,
+          clearButton:true,
+          value:new Date(),
+          minDate:new Date(2020, 11, 14),
+          maxDate:new Date(),
+          onSelect: function() {
+              dt_antigen.ajax.reload()
+          }
+      })
+      $('#filterByDateAntigen').val(now.getDate()+'-'+(now.getMonth()+1)+'-'+now.getFullYear())
+      $('#refresh-table-result-swab').click(function(){
+          dt_antigen.ajax.reload()
+      })
+      $('#filterByStatusAntigen').select2({
+          placeholder: "Pilih Status"
+      }).change(function () {
+          dt_antigen.ajax.reload()
+      });
+      $('#sendArAntigen').click(function(){
+          Swal.fire({
+              title: 'Apakah anda yakin mengirimkan data ini ke sistem ALL Record - Antigen?',
+              text: "Jika data sudah di kirim tidak bisa dilakukan perubahan !",
+              icon: 'warning',
+              showCancelButton: true,
+              confirmButtonColor: '#3085d6',
+              cancelButtonColor: '#d33',
+              confirmButtonText: 'Iya,Kirim Ke All Record'
+          }).then((result) => {
+              if (result.value) {
+                  Swal.fire({
+                      title: 'Mohon tunggu !',
+                      text:'Jangan tutup halaman ini maupun browser !',
+                      allowEscapeKey: false,
+                      allowOutsideClick: false,
+                      showConfirmButton: false,
+                      onOpen: ()=>{
+                          Swal.showLoading();
+                      }
+                  })
+                  $('#sendArAntigen').attr('disabled',true)
+                  $('#sendArAntigen').html('<i class="fa fa-sync fa-spin"></i> MENGIRIM DATA ...')
+                  let route = "https://admin.corona.jatengprov.go.id/all-record/antigen/send-all-record"
+                  let filterByRS = $('#filterByHospitalAntigen').val()
+                  let filterByDate = $('#filterByDateAntigen').val()
+                  if(!isEmpty(filterByDate)){
+                      let params = "filterByDate="+filterByDate
+                      if(!isEmpty(filterByRS)) params += '&filterByRS='+filterByRS
+                      $.get(route+'?'+params, function (data) {
+                          Swal.fire(
+                              'Success!',
+                              data.message,
+                              'success'
+                          )
+                          dt_antigen.ajax.reload(null, false)
+                          $('#sendArAntigen').html('<i class="fa fa-sync"></i> KIRIM DATA KE ALL RECORD')
+                          $('#sendArAntigen').removeAttr('disabled')
+                      })
+                          .fail(function(error) {
+                              let result = error.responseJSON
+                              Swal.fire(
+                                  'Error!',
+                                  result.message,
+                                  'error'
+                              )
+                              $('#sendArAntigen').html('<i class="fa fa-sync"></i> KIRIM DATA KE ALL RECORD')
+                              $('#sendArAntigen').removeAttr('disabled')
+                          })
+
+                  }else{
+                      Swal.fire(
+                          'Error!',
+                          'Tanggal Wajib di isi',
+                          'error'
+                      )
+                  }
+              }
+          })
+
+      })
+      var dt_antigen = $('#datatable-antigen').DataTable({
+          "ajax": {
+              "url" : "https://admin.corona.jatengprov.go.id/all-record/antigen/datatable",
+              "data": function(d) {
+                  d.filterByRS = $('#filterByHospitalAntigen').val()
+                  d.filterByDate = $('#filterByDateAntigen').val()
+                  d.filterByStatus = $('#filterByStatusAntigen').val()
+              },
+              beforeSend: function() {
+                  if (dt_antigen && dt_antigen.hasOwnProperty('settings')) {
+                      dt_antigen.settings()[0].jqXHR.abort();
+                  }
+              }
+          },
+          "processing": true,
+          "serverSide": false,
+          "scrollX"   : true,
+          "scrollCollapse" : true,
+          "fixedColumns":   {
+              leftColumns: 2,
+              rightColumns: 1
+          },
+          "autoWidth":false,
+          "columnDefs": [
+              { "width": "20%", "targets": 0 },
+              { "width": "20%", "targets": 20 },
+          ],
+          "columns": [
+              {"data": "DT_RowIndex", searchable: false},
+              {"data": "identitas", "defaultContent": "-"},
+              {"data": "name"},
+              {"data": "sex"},
+              {"data": "age_year"},
+              {"data": "province_name", "defaultContent": "-"},
+              {"data": "district_name", "defaultContent": "-"},
+              {"data": "sub_district_name", "defaultContent": "-"},
+              {"data": "village_name", "defaultContent": "-"},
+              {"data": "rt_rw","defaultContent": "-", orderable: false, searchable: false},
+              {"data": "address","defaultContent": "-", orderable: false, searchable: false},
+              {"data": "faskes_name", "defaultContent": "-"},
+              {"data": "sample_code", "defaultContent": "-"},
+              {"data": "swab_period", "defaultContent": "-"},
+              {"data": "speciment_name", "defaultContent": "-"},
+              {"data": "result", "defaultContent": "-"},
+              {"data": "purpose_name", "defaultContent": "-"},
+              {"data": "payment_name", "defaultContent": "-"},
+              {"data": "criteria", "defaultContent": "-"},
+              {"data": "keterangan", "defaultContent": "-"},
+              {"data": "symptom_date", "defaultContent": "-"},
+              {"data": "test_date", "defaultContent": "-"},
+              {"data": "send_all_record_date", "defaultContent": "-"},
+              {"data": "action", orderable: false, searchable: false,"width":"100px"}
+          ],
+          "drawCallback": function (settings) {
+              // Here the response
+              // let response = settings.json;
+              // if(response){
+              //     let data = response.data
+              //     getResult(data)
+              // }
+          },
+          "order":[ [ 0, 'asc' ] ]
+      })
+
+      // delete data
+      $('body').on('click', '#del-antigen',function() {
+          const id = $(this).data('id');
+          const patientId = $(this).data('patient-id');
+          const route = "https://admin.corona.jatengprov.go.id/all-record/antigen"
+
+          Swal.fire({
+              title: 'Apakah anda yakin ingin menghapus?',
+              text: "Data yang sudah di hapus tidak bisa di kembalikan !",
+              icon: 'warning',
+              showCancelButton: true,
+              confirmButtonColor: '#3085d6',
+              cancelButtonColor: '#d33',
+              confirmButtonText: 'Iya,Hapus'
+          }).then((result) => {
+              if (result.value) {
+                  $.post(route+'?id='+id+'&patient_id='+patientId, {_method: "delete", _token: "Egoh8yaLYW8bFpOFptmkrd1Skn4oeTGp4oHnmzEA"},function(data){
+                      dt_antigen.ajax.reload()
+                      Swal.fire(
+                          'Success!',
+                          data.message,
+                          'success'
+                      )
+                  })
+                  .fail(function(data) {
+                      let resp = JSON.parse(data.responseText)
+                      Swal.fire(
+                          'Error!',
+                          resp.message,
+                          'error'
+                      )
+                  })
+              }
+          })
+      });
+
+      $('body').on('click', '#mark-release-antigen',function() {
+          const id = $(this).data('id');
+          const patientId = $(this).data('patient-id');
+          const route = "https://admin.corona.jatengprov.go.id/all-record/antigen/mark-release"
+
+          Swal.fire({
+              title: 'Apakah anda yakin tidak mengirimkan data ini?',
+              text: "Data tidak akan di kirimkan ke all record antigen !",
+              icon: 'warning',
+              showCancelButton: true,
+              confirmButtonColor: '#3085d6',
+              cancelButtonColor: '#d33',
+              confirmButtonText: 'Iya,Jangan Kirim'
+          }).then((result) => {
+              if (result.value) {
+                  $.post(route+'?id='+id+'&patient_id='+patientId, {_method: "post", _token: "Egoh8yaLYW8bFpOFptmkrd1Skn4oeTGp4oHnmzEA"},function(data){
+                      dt_antigen.ajax.reload()
+                      Swal.fire(
+                          'Success!',
+                          data.message,
+                          'success'
+                      )
+                  })
+                      .fail(function(data) {
+                          let resp = JSON.parse(data.responseText)
+                          Swal.fire(
+                              'Error!',
+                              resp.message,
+                              'error'
+                          )
+                      })
+              }
+          })
+      });
+
+      $('#filterByHospitalAntigen').select2({
+          placeholder: "Pilih RS",
+          data:listHospital
+      }).change(function () {
+          dt_antigen.ajax.reload()
+      });
+
+      let antigenDateRangeDownloadExcel = $('#antigenDaterangeDownloadExcel').datepicker({
+          autoClose:true,
+          clearButton:true,
+          minDate:new Date(2020, 2, 15),
+          maxDate:new Date()
+      })
+      let antigenDateRangeDownloadExcelVal = function () {
+          let data = antigenDateRangeDownloadExcel.val().split(' s/d ');
+          return {
+              date_start: data[0],
+              date_end: data[1]
+          }
+      }
+      $('#btnDownloadAntigen').click(function(){
+          let url = `https://admin.corona.jatengprov.go.id/all-record/result-swab/download`
+          let filterByRS = $('#filterByHospitalAntigen').val()
+          let filterByDate = $('#filterByDateAntigen').val()
+          url = url +'?filterByDate='+filterByDate
+          if(!isEmpty(filterByRS)) url = url+'&filterByRS='+filterByRS
+          window.location = url
+      })
+
+      $('#btn-download-excel').on('click', function () {
+          let url = new URL('https://admin.corona.jatengprov.go.id/all-record/antigen/download-excel');
+
+          let range = antigenDateRangeDownloadExcelVal();
+          let filterByRS = $('#filterByHospitalAntigen').val()
+          let filterByDate = $('#filterByDateAntigen').val()
+          url.searchParams.append('filterByDate',filterByDate);
+          url.searchParams.append('startDate',range.date_start);
+          url.searchParams.append('endDate',range.date_end);
+          if (!isEmpty(filterByRS)) url.searchParams.append('filterByRS',$('#filterByHospitalAntigen').val());
+          window.open(url.href)
+      })
+
+      function isEmpty(val){
+          return (val === undefined || val == null || val.length <= 0);
+      }
+
+      $('.dataTables_scrollBody').css('min-height', '200px');
+  })
+</script>
