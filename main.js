@@ -5,6 +5,8 @@ const app = new Core()
 module.exports = async (isPM2) => {
   try{
     await app.init()
+
+    await app.inputCorJat()
    
     await app.close(isPM2)
 
