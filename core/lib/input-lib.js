@@ -2,12 +2,14 @@ exports._inputCorJat = async ({ that, person }) => {
   that.spinner.start(`input corjat ${person.nama}`)
   person = await that.upsertPerson({ person })
 
+  let notifWall
+
   await that.loginCorJat()
 
   let formTambah = await that.page.$('form#tambah')
 
   if(!formTambah){
-    let notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
+    notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
     if(notifWall){
       await that.clickBtn({
         text: 'OK'
@@ -46,7 +48,7 @@ exports._inputCorJat = async ({ that, person }) => {
     that.spinner.fail(`${person.checkNIK.error} ${person.checkNIK.message}`)
   } 
 
-  let notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
+  notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
   if(notifWall){
     await that.clickBtn({
       text: 'OK'
@@ -158,14 +160,20 @@ exports._inputCorJat = async ({ that, person }) => {
 
     await that.find$AndClick({ $: 'button[data-value="B"]'})
 
-    await that.page.$eval('#test_date_rdt', (e, tgl ) => $(e).val(tgl),  that.convertFromAAR2CJ(person.tanggal_pemeriksaan))
+    notifWall = false
+    while(!notifWall){
+      await that.page.waitForTimeout(100)
+      notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
+      if(notifWall){
+        console.log('ada')
+        await that.clickBtn({
+          text: 'OK'
+        })
+      }
 
-    if(person.hasil_pemeriksaan === 'POSITIF') {
-      await that.find$AndClick({ $: '#resultPositif'})
-    } else {
-      await that.find$AndClick({ $: '#resultNegatif'})
     }
 
+    await that.page.$eval('#test_date_rdt', (e, tgl ) => $(e).val(tgl),  that.convertFromAAR2CJ(person.tanggal_pemeriksaan))
     if(person.status_pembiayaan.toLowerCase().includes('tidak')) {
       await that.find$AndClick({ $: '#paymentTidakBerbayar'})
     } else {
@@ -187,19 +195,39 @@ exports._inputCorJat = async ({ that, person }) => {
     await that.page.evaluate( () => document.getElementById("swab_period_rdt").value = "")
     await that.page.type('#swab_period_rdt', '1')
 
+
+    if(person.hasil_pemeriksaan === 'POSITIF') {
+      await that.find$AndClick({ $: '#resultPositif'})
+    } else {
+      await that.find$AndClick({ $: '#resultNegatif'})
+    }
+
+
     await Promise.all([
       that.clickBtn({ text: 'Simpan'}),
+      that.mengcovid(),
       that.page.waitForResponse(response => response.url().toLowerCase().includes('odp'))
     ])
 
-    // await that.page.waitForTimeout(5000)
+  }
+  
+}
 
-    let notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
-    if(notifWall){
-      await that.clickBtn({
-        text: 'OK'
-      })
+exports._mengcovid = async ({ that }) => {
+  await that.page.waitForTimeout(100)
+  let visible = false
+  for(let el of await that.page.$x(`//button[contains(., "Iya")]`)){
+    await that.page.evaluate(e => {
+      e.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'end' });
+    }, el);
+    visible = await that.isVisible({ el })
+    if(visible){
+      // await el.focus()
+      await el.evaluate( el => el.click())
+      break
     }
   }
+
+  await that.page.waitForTimeout(100)
   
 }

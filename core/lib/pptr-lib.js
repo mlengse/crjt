@@ -63,7 +63,7 @@ exports._jqSelect = async ({ that, sel, val, id }) => {
     let options
 
     while(!options || options.length < 2){
-      await that.page.waitForTimeout(100)
+      await that.page.waitForTimeout(10)
       options = await that.page.evaluate( (sel, val) => {
         return $(sel).find('option').get().map( e => ({
           val: e.getAttribute('value'),
@@ -104,7 +104,7 @@ exports._typeAndSelect = async ({ that, selector, val }) => {
 
   await that.page.focus(selector)
   await that.page.click(selector)
-  await that.page.waitForTimeout(500)
+  await that.page.waitForTimeout(100)
 
   // await that.page.focus('input.select2-search__field')
   // await that.page.click('input.select2-search__field')
