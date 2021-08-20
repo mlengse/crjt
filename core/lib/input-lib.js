@@ -24,7 +24,7 @@ exports._inputCorJat = async ({ that, person }) => {
   
   }
 
-  if(!person.checkNIK || (person.checkNIK && !person.checkNIK.error)){
+  if(!person.checkNIK || (person.checkNIK && !person.checkNIK.error && person.checkNIK !== [])){
   
     await that.page.evaluate( () => document.getElementById("nik").value = "")
   
