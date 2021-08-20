@@ -1,7 +1,8 @@
 exports._inputCorJat = async ({ that, person }) => {
-  that.spinner.start(`input corjat ${person.nama}`)
+  // that.spinner.start(`input corjat ${person.nama}`)
   person = await that.upsertPerson({ person })
 
+  that.spinner.succeed(`input corjat ${JSON.stringify(person)}`)
   let notifWall
 
   await that.loginCorJat()
@@ -80,7 +81,7 @@ exports._inputCorJat = async ({ that, person }) => {
     })
 
     await that.selectChoice({
-      val: person.jenis_kelamin,
+      val: person.jenis_kelamin || person.capil_sex || 'L',
       choice: {
         L: "#sexL",
         P: "#sexP"
@@ -95,6 +96,7 @@ exports._inputCorJat = async ({ that, person }) => {
       sel: '#job',
       val: person.checkNIK && person.checkNIK['capil_job '] ? person.checkNIK['capil_job '] : 'tidak tahu'
     })
+
 
     await that.jqSelect({
       sel: '#province_id',
@@ -152,35 +154,45 @@ exports._inputCorJat = async ({ that, person }) => {
     await that.waitFor({ selector: 'select#swab_type'})
 
     await that.page.select('select#swab_type', '2')
-    await that.page.waitForTimeout(500)
+    // await that.page.waitForTimeout(500)
 
-
-    await that.clickBtn({ text: 'Pilih'})
-
-    await that.find$AndClick({ $: 'button[data-value="B"]'})
     if(person.hasil_pemeriksaan === 'POSITIF') {
       await that.find$AndClick({ $: '#resultPositif'})
-      await that.page.waitForTimeout(100)
-      await that.page.waitForTimeout(100)
-
-      notifWall = false
-      while(!notifWall){
-        await that.page.waitForTimeout(100)
-        notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
-        if(notifWall){
-          console.log('ada')
-          await that.clickBtn({
-            text: 'OK'
-          })
-        }
-  
-      }
 
     } else {
       await that.find$AndClick({ $: '#resultNegatif'})
     }
 
 
+
+    await that.clickBtn({ text: 'Pilih'})
+
+    await that.find$AndClick({ $: 'button[data-value="B"]'})
+
+    that.spinner.succeed('di sinikah?')
+    await that.page.waitForTimeout(100)
+    notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
+    if(notifWall){
+      // console.log('ada')
+      await that.clickBtn({
+        text: 'OK'
+      })
+    }
+
+    // await that.page.waitForTimeout(100)
+
+    // notifWall = false
+    // while(!notifWall){
+    //   await that.page.waitForTimeout(100)
+    //   notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
+    //   if(notifWall){
+    //     console.log('ada')
+    //     await that.clickBtn({
+    //       text: 'OK'
+    //     })
+    //   }
+
+    // }
 
     await that.page.$eval('#test_date_rdt', (e, tgl ) => $(e).val(tgl),  that.convertFromAAR2CJ(person.tanggal_pemeriksaan))
     if(person.status_pembiayaan.toLowerCase().includes('tidak')) {

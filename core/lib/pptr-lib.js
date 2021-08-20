@@ -45,12 +45,16 @@ exports._inputIfNoVal = async ({ that, selector, val }) => {
 
 exports._selectChoice =  async ({ that, val, choice }) => {
 
-  for(let c of Object.keys(choice)){
-    await that.waitFor({
-      selector: choice[c]
-    })
+  that.spinner.start(`selectChoice ${val}`)
 
-  }
+  await that.waitFor({ selector: choice[val]})
+
+  // for(let c of Object.keys(choice)){
+  //   await that.waitFor({
+  //     selector: choice[c]
+  //   })
+
+  // }
 
   await that.page.$eval( choice[val], e => $(e).prop('checked', true))
 }
@@ -64,18 +68,22 @@ exports._jqSelect = async ({ that, sel, val, id }) => {
 
     while(!options || options.length < 2){
       await that.page.waitForTimeout(100)
-      options = await that.page.evaluate( (sel, val) => {
+      await that.page.evaluate(e => {
+        document.querySelector(e).scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'end' });
+      }, sel);
+
+      options = await that.page.evaluate( sel => {
         return $(sel).find('option').get().map( e => ({
           val: e.getAttribute('value'),
           text: e.innerText
         }))
         // $(sel).val($(sel).find("option:contains('"+val+"')").val()).trigger('change')
-      }, sel, val)
+      }, sel)
     }
     
-    option = options.filter( e => e.text.toLowerCase().includes(val.toLowerCase()) && !e.text.toLowerCase().includes('dirawat'))
+    that.spinner.succeed(`val ${val} options: ${options.length /**map(e => e.text) */}`)
+    option = options.filter( e => e && e.text && e.text.toLowerCase().includes(val.toLowerCase()) && !e.text.toLowerCase().includes('dirawat'))
   
-    // that.spinner.succeed(`val ${val} options: ${options.map(e => e.text)}`)
   
     if(option.length){
       await that.page.evaluate( (sel, val) => $(sel).val(val).trigger('change'), sel, option[0].val)
@@ -167,7 +175,7 @@ exports._waitFor = async({ that, selector}) => {
   }
   await that.page.waitForTimeout(500)
 
-  // that.spinner.succeed(`${selector} found`)
+  that.spinner.succeed(`${selector} found`)
 
   // return el
 
