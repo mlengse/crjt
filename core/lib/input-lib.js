@@ -1,8 +1,9 @@
 exports._inputCorJat = async ({ that, person }) => {
+  that.response = false
   // that.spinner.start(`input corjat ${person.nama}`)
   person = await that.upsertPerson({ person })
 
-  that.spinner.succeed(`input corjat ${JSON.stringify(person)}`)
+  that.spinner.start(`input corjat ${JSON.stringify(person)}`)
   let notifWall
 
   await that.loginCorJat()
@@ -25,7 +26,7 @@ exports._inputCorJat = async ({ that, person }) => {
   
   }
 
-  if(!person.checkNIK || (person.checkNIK && !person.checkNIK.error)){
+  if(!person.checkNIK || (person.checkNIK && !person.checkNIK.error) || !person.checkDuplicate){
   
     await that.page.evaluate( () => document.getElementById("nik").value = "")
   
@@ -44,9 +45,10 @@ exports._inputCorJat = async ({ that, person }) => {
 
   }
   
-  if(person.checkNIK && person.checkNIK.error){
+  if((person.checkNIK && person.checkNIK.error) || (person.checkDuplicate)){
     await that.upsertPerson({ person })
-    that.spinner.fail(`${person.checkNIK.error} ${person.checkNIK.message}`)
+    person.checkDuplicate && that.spinner.fail(`${person.checkDuplicate.error} ${person.checkDuplicate.message}`)
+    person.checkNIK.error && that.spinner.fail(`${person.checkNIK.error} ${person.checkNIK.message}`)
   } 
 
   notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
@@ -115,123 +117,173 @@ exports._inputCorJat = async ({ that, person }) => {
       val: person.desa_kelurahan_domisili
     })
 
-
     await that.jqSelect({
       sel: '#ktp_village_id',
       val: person.checkNIK.capil_kel
     })
 
-
-    await that.page.evaluate( () => document.getElementById("rt").value = "")
-    await that.page.type('#rt', person.rt)
-    await that.page.evaluate( () => document.getElementById("rw").value = "")
-    await that.page.type('#rw', person.rw)
-    await that.page.evaluate( () => document.getElementById("address").value = "")
-    await that.page.type('#address', person.alamat_domisili)
-
-    if(person.checkNIK === []){
-
+    if(!person.checkNIK.capil_rt){
+      await that.page.evaluate( () => document.getElementById("ktp_rt").value = "")
+      await that.page.type('#ktp_rt', '1')
     }
-
-    await that.page.evaluate( () => document.getElementById("common_condition").value = "")
-    await that.page.type('#common_condition', 'baik')
-    await that.page.evaluate( () => document.getElementById("treatment").value = "")
-    await that.page.type('#treatment', 'isolasi')
-    await that.page.$eval('#tgl_lapor', (e, tgl ) => $(e).val(tgl),  that.convertFromAAR2CJ(person.tanggal_pemeriksaan))
-
-    // await that.find$AndClick({ $: })
-
-    await that.jqSelect({
-      sel: '#status_id',
-      val: person.hasil_pemeriksaan === 'POSITIF' ? 'terkonfirmasi' : person.tujuan_pemeriksaan === 'SKRINING' ? 'screening' : person.tujuan_pemeriksaan
-    })
-
-    // await that.typeAndSelect({
-    //   selector: 'span.select2-container[data-select2-id="2255"]',
-    //   val: person.tujuan_pemeriksaan === 'SKRINING' ? 'screening' : person.tujuan_pemeriksaan
-    // })
-    
-    await that.waitFor({ selector: 'select#swab_type'})
-
-    await that.page.select('select#swab_type', '2')
-    // await that.page.waitForTimeout(500)
-
-    if(person.hasil_pemeriksaan === 'POSITIF') {
-      await that.find$AndClick({ $: '#resultPositif'})
-
-    } else {
-      await that.find$AndClick({ $: '#resultNegatif'})
+    if(!person.checkNIK.capil_rw){
+      await that.page.evaluate( () => document.getElementById("ktp_rw").value = "")
+      await that.page.type('#ktp_rw', '1')
     }
 
 
+    person = await that.cekDuplikat({ person })
 
-    await that.clickBtn({ text: 'Pilih'})
-
-    await that.find$AndClick({ $: 'button[data-value="B"]'})
-
-    that.spinner.succeed('di sinikah?')
-    await that.page.waitForTimeout(100)
-    notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
-    if(notifWall){
-      // console.log('ada')
-      await that.clickBtn({
-        text: 'OK'
+    if(!person.checkDuplicate){
+  
+      await that.page.evaluate( () => document.getElementById("rt").value = "")
+      await that.page.type('#rt', person.rt)
+      await that.page.evaluate( () => document.getElementById("rw").value = "")
+      await that.page.type('#rw', person.rw)
+      await that.page.evaluate( () => document.getElementById("address").value = "")
+      await that.page.type('#address', person.alamat_domisili)
+  
+      await that.page.evaluate( () => document.getElementById("common_condition").value = "")
+      await that.page.type('#common_condition', 'baik')
+      await that.page.evaluate( () => document.getElementById("treatment").value = "")
+      await that.page.type('#treatment', 'isolasi')
+      await that.page.$eval('#tgl_lapor', (e, tgl ) => $(e).val(tgl),  that.convertFromAAR2CJ(person.tanggal_pemeriksaan))
+  
+      // await that.find$AndClick({ $: })
+  
+      await that.jqSelect({
+        sel: '#status_id',
+        val: person.hasil_pemeriksaan === 'POSITIF' ? 'terkonfirmasi' : person.tujuan_pemeriksaan === 'SKRINING' ? 'screening' : person.tujuan_pemeriksaan
       })
-    }
+  
+      // await that.typeAndSelect({
+      //   selector: 'span.select2-container[data-select2-id="2255"]',
+      //   val: person.tujuan_pemeriksaan === 'SKRINING' ? 'screening' : person.tujuan_pemeriksaan
+      // })
 
-    // await that.page.waitForTimeout(100)
-
-    // notifWall = false
-    // while(!notifWall){
-    //   await that.page.waitForTimeout(100)
-    //   notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
-    //   if(notifWall){
-    //     console.log('ada')
-    //     await that.clickBtn({
-    //       text: 'OK'
-    //     })
-    //   }
-
-    // }
-
-    await that.page.$eval('#test_date_rdt', (e, tgl ) => $(e).val(tgl),  that.convertFromAAR2CJ(person.tanggal_pemeriksaan))
-    if(person.status_pembiayaan.toLowerCase().includes('tidak')) {
-      await that.find$AndClick({ $: '#paymentTidakBerbayar'})
-    } else {
-      await that.find$AndClick({ $: '#paymentBerbayar'})
-    }
-
-    await that.page.evaluate( () => document.getElementById("speciment_code_rdt").value = "")
-    if(!person.nomor_spesimen) {
-      person.nomor_spesimen = that.unixTime()
-    }
-
-    await that.page.type('#speciment_code_rdt', person.nomor_spesimen)
-
-    await that.jqSelect({
-      sel: '#purpose-rdt',
-      val: person.tujuan_pemeriksaan  === 'SKRINING' ? 'Alasan lain' : person.tujuan_pemeriksaan
-    })
-
-    await that.page.evaluate( () => document.getElementById("swab_period_rdt").value = "")
-    await that.page.type('#swab_period_rdt', '1')
-
-
-    await Promise.all([
-      that.clickBtn({ text: 'Simpan'}),
-      that.mengcovid(),
-      that.page.waitForResponse(response => response.url().toLowerCase().includes('odp'))
-    ])
-
-    notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
-    if(notifWall){
-      await that.clickBtn({
-        text: 'OK'
+      await that.waitFor({ selector: 'select#swab_type'})
+  
+      await that.page.select('select#swab_type', '2')
+      // await that.page.waitForTimeout(500)
+  
+      if(person.hasil_pemeriksaan === 'POSITIF') {
+        await that.find$AndClick({ $: '#resultPositif'})
+  
+      } else {
+        await that.find$AndClick({ $: '#resultNegatif'})
+      }
+  
+      await that.clickBtn({ text: 'Pilih'})
+  
+      await that.find$AndClick({ $: 'button[data-value="B"]'})
+  
+      await that.page.waitForTimeout(100)
+      notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
+      if(notifWall){
+        that.spinner.succeed('di sinikah?')
+        // console.log('ada')
+        await that.clickBtn({
+          text: 'OK'
+        })
+      }
+  
+      // await that.page.waitForTimeout(100)
+  
+      // notifWall = false
+      // while(!notifWall){
+      //   await that.page.waitForTimeout(100)
+      //   notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
+      //   if(notifWall){
+      //     console.log('ada')
+      //     await that.clickBtn({
+      //       text: 'OK'
+      //     })
+      //   }
+  
+      // }
+  
+      await that.page.$eval('#test_date_rdt', (e, tgl ) => $(e).val(tgl),  that.convertFromAAR2CJ(person.tanggal_pemeriksaan))
+      if(person.status_pembiayaan.toLowerCase().includes('tidak')) {
+        await that.find$AndClick({ $: '#paymentTidakBerbayar'})
+      } else {
+        await that.find$AndClick({ $: '#paymentBerbayar'})
+      }
+  
+      await that.page.evaluate( () => document.getElementById("speciment_code_rdt").value = "")
+      if(!person.nomor_spesimen) {
+        person.nomor_spesimen = that.unixTime()
+      }
+  
+      await that.page.type('#speciment_code_rdt', person.nomor_spesimen)
+  
+      await that.jqSelect({
+        sel: '#purpose-rdt',
+        val: person.tujuan_pemeriksaan  === 'SKRINING' ? 'Alasan lain' : person.tujuan_pemeriksaan
       })
+  
+      await that.page.evaluate( () => document.getElementById("swab_period_rdt").value = "")
+      await that.page.type('#swab_period_rdt', '1')
+  
+
+      !that.response && await Promise.all([
+        that.clickBtn({ text: 'Simpan'}),
+        that.mengcovid(),
+        that.page.waitForResponse(response => response.url().toLowerCase().includes('odp'))
+      ])
+  
+      notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
+      if(notifWall){
+        await that.clickBtn({
+          text: 'OK'
+        })
+      }
+  
     }
+
+
 
   }
+  person = await that.upsertPerson({ person })
   
+}
+
+exports._cekDuplikat = async ({ that, person }) => {
+  // let dupeBtn = await that.page.$x('//button[contains(., "DUPLIKAT")]')
+  // if(dupeBtn && await that.isVisible({ el: dupeBtn[0]})) {
+  //   that.spinner.succeed('tombol dupl ada')
+  //   await Promise.all([
+  //     that.clickBtn({ text: 'DUPLIKAT'}),
+  //     that.page.waitForResponse( async response => {
+  //       if(response.url().toLowerCase().includes('check-dupl')){
+  //         person.checkDuplicate = await response.json()
+  //         return true
+  //       }
+  //       return false
+  //     }),
+  //   ])
+  
+  // }
+  // person.checkDuplicate && person.checkDuplicate.error && that.spinner.fail(`${person.checkDuplicate.error} ${person.checkDuplicate.message}`)
+  // let notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
+  // if(notifWall){
+  //   await that.clickBtn({
+  //     text: 'OK'
+  //   })
+  // }
+  return person
+
+}
+
+exports._closeWarning = async ({ that, response }) => {
+  that.spinner.fail(`${response.error} ${response.message}`)
+
+  let notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
+  if(notifWall){
+    await that.clickBtn({
+      text: 'OK'
+    })
+  }
+
 }
 
 exports._mengcovid = async ({ that }) => {

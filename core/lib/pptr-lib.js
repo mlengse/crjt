@@ -66,7 +66,7 @@ exports._jqSelect = async ({ that, sel, val, id }) => {
   } else {
     let options
 
-    while(!options || options.length < 2){
+    while(!options || options.length < 3){
       await that.page.waitForTimeout(100)
       await that.page.evaluate(e => {
         document.querySelector(e).scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'end' });
@@ -82,8 +82,11 @@ exports._jqSelect = async ({ that, sel, val, id }) => {
     }
     
     that.spinner.succeed(`val ${val} options: ${options.length /**map(e => e.text) */}`)
-    option = options.filter( e => e && e.text && e.text.toLowerCase().includes(val.toLowerCase()) && !e.text.toLowerCase().includes('dirawat'))
-  
+    option = options.filter( e => e 
+      && e.text 
+      && e.text.toLowerCase().split(' ').join('').includes(
+        val.toLowerCase().split(' ').join('')) 
+        && !e.text.toLowerCase().includes('dirawat'))
   
     if(option.length){
       await that.page.evaluate( (sel, val) => $(sel).val(val).trigger('change'), sel, option[0].val)
@@ -183,7 +186,7 @@ exports._waitFor = async({ that, selector}) => {
 
 
 exports._findXPathAndClick = async ({ that, xpath }) => {
-  // that.spinner.start(`findXPathAndClick ${xpath}`)
+  that.spinner.start(`findXPathAndClick ${xpath}`)
   let visible = false
   while(!visible){
     for(let el of await that.page.$x(xpath)){
@@ -211,15 +214,19 @@ exports._initBrowser = async ({ that }) => {
     that.pages = await that.Browser.pages()
     that.page = that.pages[0]
 
-    // that.page.on('response', async response => {
-    //   if(response.request().resourceType() === 'xhr'){
-    //     if(response.headers()['content-type'].includes('json')) {
-    //       that.response = await response.json()
-    //     } else if(response.headers()['content-type'].includes('html')) {
-    //       that.response = await response.text()
-    //     }
-    //   }
-    // })
+    that.page.on('response', async response => {
+      if(response.request().resourceType() === 'xhr' && response.url().includes('dupl')){
+        if(response.headers()['content-type'].includes('json')) {
+          let resp = await response.json()
+          if(resp.error){
+            that.response = resp
+            await that.closeWarning({response: that.response})
+          }
+        } else if(response.headers()['content-type'].includes('html')) {
+          that.response = await response.text()
+        }
+      }
+    })
     
     await that.page.goto(`${that.config.CORJAT_URL}`, that.waitOpt)
     

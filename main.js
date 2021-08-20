@@ -2,12 +2,14 @@ const Core = require('./core')
 
 const app = new Core()
 
+const exclude = [ 278 ]
+
 module.exports = async (isPM2) => {
   try{
     await app.init()
 
     for(let [id, nik] of Object.entries(Object.keys(app.people)))
-    if(id > 234)
+    if(id > 779 && exclude.indexOf(id) === -1)
     {
       app.spinner.succeed(`processing ${id}, ${nik}`)
       await app.inputCorJat( { person: app.people[nik] } )
