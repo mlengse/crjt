@@ -55,7 +55,7 @@ exports._inputCorJat = async ({ that, person }) => {
     })
   }
 
-  if(!person.checkNIK || (person.checkNIK.length && person.checkNIK && !person.checkNIK.error)) {
+  if(!person.checkNIK || (person.checkNIK && !person.checkNIK.error && !Array.isArray(person.checkNIK))) {
     that.spinner.succeed(`input ${person.nama}`)
 
     await that.page.waitForTimeout(500)
@@ -158,9 +158,11 @@ exports._inputCorJat = async ({ that, person }) => {
     await that.clickBtn({ text: 'Pilih'})
 
     await that.find$AndClick({ $: 'button[data-value="B"]'})
-
     if(person.hasil_pemeriksaan === 'POSITIF') {
       await that.find$AndClick({ $: '#resultPositif'})
+      await that.page.waitForTimeout(100)
+      await that.page.waitForTimeout(100)
+
       notifWall = false
       while(!notifWall){
         await that.page.waitForTimeout(100)
