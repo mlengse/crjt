@@ -28,7 +28,38 @@ exports._inputCorJat = async ({ that, person }) => {
       await that.upsertPerson({ person })
       that.spinner.fail(`${person.checkNIK.error} ${person.checkNIK.message}`)
     } else {
-      that.spinner.succeed(`${JSON.stringify(person.checkNIK)}`)
+      that.spinner.succeed(`${JSON.stringify(person)}`)
+
+      await that.page.waitForTimeout(500)
+
+      await that.inputIfNoVal({ 
+        selector: '#name',
+        val: person.nama
+      })
+
+      await that.inputIfNoVal({ 
+        selector: '#birth_date',
+        val: that.convertFromAAR2CJ(person.tanggal_lahir)
+      })
+
+      person.no_telp_handphone && await that.inputIfNoVal({
+        selector: '#phone_number',
+        val: person.no_telp_handphone
+      })
+
+      await that.selectChoice({
+        val: person.jenis_kelamin,
+        choice: {
+          L: "#sexL",
+          P: "#sexP"
+        }
+      })
+
+      person.checkNIK && person.checkNIK.capil_job && await that.typeAndSelect({
+        selector: '#select2-job-container',
+        val: person.checkNIK.capil_job
+      })
+
     }
   
     let notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')

@@ -1,6 +1,6 @@
 const pptr = require('puppeteer-core')
 exports.waitOpt = {
-  waitUntil: 'networkidle2',
+  waitUntil: 'networkidle0',
   timeout: 0
 }
 
@@ -30,6 +30,40 @@ exports._isVisible = async ({ that, el }) => {
     } while (pointContainer = pointContainer.parentNode);
     return false;
   }, el)
+}
+
+exports._inputIfNoVal = async ({ that, selector, val }) => {
+  await that.waitFor({ selector })
+
+  let existVal = await that.page.$eval( selector, e => $(e).val())
+  console.log(existVal)
+}
+
+exports.selectChoice =  async ({ that, val, choice }) => {
+
+  await Promise.all([ ...Object.keys(choice).map( c => that.waitFor({
+    selector: choice[c]
+  }))])
+
+  await that.page.$eval( choice[val], e => $(e).prop('checked', true))
+}
+
+exports.typeAndSelect = async ({ that, selector, val }) => {
+
+  await that.waitFor({ selector })
+
+  await that.find$AndClick({ $: selector })
+
+  await that.page.waitForTimeout(100)
+
+  for( let hrf of val){
+    let ada
+    while(!ada || ada > 1) {
+      await that.page.typeAndSelect('input.select2-search__field', hrf)
+      ada = await that.page.$$eval('#select2-job-results > li', els => [...els].length)
+      console.log(ada)
+    }
+  }
 }
 
 exports._find$AndClick = async ({ that, $ }) => {

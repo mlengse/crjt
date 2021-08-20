@@ -9,3 +9,4 @@ if(process.env.BASE_DATE){
 // moment.now = () => +new Date('2021', '2', '28');
 exports.unixTime = () => moment().format('x')
 exports.xTimestamp = () => moment.utc().format('X')
+exports.convertFromAAR2CJ = (tgl) => moment(tgl, 'YYYY-MM-DD HH:mm:ss').format('DD-MM-YYYY')
