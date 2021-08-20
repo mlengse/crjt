@@ -140,7 +140,7 @@ exports._inputCorJat = async ({ that, person }) => {
 
     await that.jqSelect({
       sel: '#status_id',
-      val: person.tujuan_pemeriksaan === 'SKRINING' ? 'screening' : person.tujuan_pemeriksaan
+      val: person.hasil_pemeriksaan === 'POSITIF' ? 'terkonfirmasi' : person.tujuan_pemeriksaan === 'SKRINING' ? 'screening' : person.tujuan_pemeriksaan
     })
 
     // await that.typeAndSelect({
