@@ -173,6 +173,10 @@ exports._inputCorJat = async ({ that, person }) => {
     }
 
     await that.page.evaluate( () => document.getElementById("speciment_code_rdt").value = "")
+    if(!person.nomor_spesimen) {
+      person.nomor_spesimen = that.unixTime()
+    }
+
     await that.page.type('#speciment_code_rdt', person.nomor_spesimen)
 
     await that.jqSelect({
