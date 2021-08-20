@@ -24,7 +24,7 @@ exports._inputCorJat = async ({ that, person }) => {
   
   }
 
-  if(!person.checkNIK || (person.checkNIK && !person.checkNIK.error && person.checkNIK !== [])){
+  if(!person.checkNIK || (person.checkNIK && !person.checkNIK.error)){
   
     await that.page.evaluate( () => document.getElementById("nik").value = "")
   
@@ -56,7 +56,7 @@ exports._inputCorJat = async ({ that, person }) => {
   }
 
 
-  if(!person.checkNIK || (person.checkNIK && !person.checkNIK.error)) {
+  if(!person.checkNIK || (person.checkNIK && !person.checkNIK.error && person.checkNIK !== [])) {
     that.spinner.succeed(`input ${person.nama}`)
 
     await that.page.waitForTimeout(500)
