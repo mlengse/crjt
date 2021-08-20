@@ -28,22 +28,7 @@ exports._loginCorJat = async ({ that }) => {
     await that.page.goto(`${that.config.CORJAT_URL}`, that.waitOpt)
   }
 
-  let formTambah = await that.page.$('form#tambah')
 
-  if(!formTambah){
-    let notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
-    if(notifWall){
-      await that.clickBtn({
-        text: 'OK'
-      })
-    }
-  
-    await that.clickBtn({ text: 'Tambah Kasus'})
-  
-    await that.findXPathAndClick({ xpath: '//a[contains(., "WNI")]'})
-  
-  
-  }
 
 }
 

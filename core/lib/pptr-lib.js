@@ -7,7 +7,8 @@ exports.waitOpt = {
 exports._clickBtn = async({ that, text}) => await that.findXPathAndClick({xpath: `//button[contains(., '${text}')]`});
 exports._isVisible = async ({ that, el }) => {
   return await that.page.evaluate( elem => {
-    if (!(elem instanceof Element)) throw Error('DomUtil: elem is not an element.');
+    if (!(elem instanceof Element)) return false;
+    // if (!(elem instanceof Element)) throw Error('DomUtil: elem is not an element.');
     const style = getComputedStyle(elem);
     if (style.display === 'none') return false;
     if (style.visibility !== 'visible') return false;
@@ -36,34 +37,103 @@ exports._inputIfNoVal = async ({ that, selector, val }) => {
   await that.waitFor({ selector })
 
   let existVal = await that.page.$eval( selector, e => $(e).val())
-  console.log(existVal)
+  if(!existVal){
+    await that.page.$eval( selector, (e, val) => $(e).val(val), val)
+  }
+  // console.log(existVal)
 }
 
-exports.selectChoice =  async ({ that, val, choice }) => {
+exports._selectChoice =  async ({ that, val, choice }) => {
 
-  await Promise.all([ ...Object.keys(choice).map( c => that.waitFor({
-    selector: choice[c]
-  }))])
+  for(let c of Object.keys(choice)){
+    await that.waitFor({
+      selector: choice[c]
+    })
+
+  }
 
   await that.page.$eval( choice[val], e => $(e).prop('checked', true))
 }
 
-exports.typeAndSelect = async ({ that, selector, val }) => {
+exports._jqSelect = async ({ that, sel, val, id }) => {
+  if(id){
+    await that.page.evaluate(( sel, id ) => $(sel).val(id).change(), sel, id)
+    that.spinner.succeed('iki swab ag')
+  } else {
+    let options
+
+    while(!options || options.length < 2){
+      await that.page.waitForTimeout(100)
+      options = await that.page.evaluate( (sel, val) => {
+        return $(sel).find('option').get().map( e => ({
+          val: e.getAttribute('value'),
+          text: e.innerText
+        }))
+        // $(sel).val($(sel).find("option:contains('"+val+"')").val()).trigger('change')
+      }, sel, val)
+    }
+    
+    option = options.filter( e => e.text.toLowerCase().includes(val.toLowerCase()) && !e.text.toLowerCase().includes('dirawat'))
+  
+    // that.spinner.succeed(`val ${val} options: ${options.map(e => e.text)}`)
+  
+    if(option.length){
+      await that.page.evaluate( (sel, val) => $(sel).val(val).trigger('change'), sel, option[0].val)
+    } else {
+      await that.page.evaluate( (sel, val) => $(sel).val(val).trigger('change'), sel, options[0].val)
+    }
+    
+  
+  }
+
+  await that.page.waitForTimeout(500)
+
+}
+
+exports._typeAndSelect = async ({ that, selector, val }) => {
+
+  // that.spinner.succeed(`type and select ${selector} ${val}`)
 
   await that.waitFor({ selector })
 
-  await that.find$AndClick({ $: selector })
+  // that.spinner.succeed(`waitFor ${selector}`)
 
-  await that.page.waitForTimeout(100)
+  // await that.find$AndClick({ $: selector })
 
-  for( let hrf of val){
-    let ada
-    while(!ada || ada > 1) {
-      await that.page.typeAndSelect('input.select2-search__field', hrf)
-      ada = await that.page.$$eval('#select2-job-results > li', els => [...els].length)
-      console.log(ada)
+  // that.spinner.succeed(`find$AndClick ${selector}`)
+
+  await that.page.focus(selector)
+  await that.page.click(selector)
+  await that.page.waitForTimeout(500)
+
+  // await that.page.focus('input.select2-search__field')
+  // await that.page.click('input.select2-search__field')
+
+  // await that.find$AndClick({ $: 'input.select2-search__field'})
+
+  // await that.page.waitForTimeout(500)
+
+  let ada
+
+  let hrfs = val.split('')
+
+  while(hrfs.length){
+    hrf = hrfs.shift()
+    await that.page.type('input.select2-search__field', hrf, { delay: 100})
+    let els = await that.page.$$('span.select2-results > ul > li')
+    if(els.length) for(let el of els){
+      ada = await that.page.evaluate( el => el.innerText, el)
+      if(ada.toLowerCase().includes(val.toLowerCase()) && !ada.toLowerCase().includes('dirawat') ){
+        console.log(ada)
+        hrfs = []
+        await el.focus()
+        await el.click()
+      }
     }
   }
+
+  that.spinner.succeed(`type and select ${selector} ${val}`)
+
 }
 
 exports._find$AndClick = async ({ that, $ }) => {
@@ -99,7 +169,7 @@ exports._waitFor = async({ that, selector}) => {
 
   // that.spinner.succeed(`${selector} found`)
 
-  return el
+  // return el
 
 }
 
