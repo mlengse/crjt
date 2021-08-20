@@ -55,7 +55,7 @@ exports._inputCorJat = async ({ that, person }) => {
 
 
   if(!person.checkNIK || (person.checkNIK && !person.checkNIK.error)) {
-    that.spinner.succeed(`${JSON.stringify(person)}`)
+    that.spinner.succeed(`input ${person.nama}`)
 
     await that.page.waitForTimeout(500)
 
@@ -69,7 +69,7 @@ exports._inputCorJat = async ({ that, person }) => {
       val: that.convertFromAAR2CJ(person.tanggal_lahir)
     })
 
-    if(!person.no_telp_handphone || person.no_telp_handphone.includes('00000000')){
+    if(!person.no_telp_handphone || person.no_telp_handphone.split('').filter(e=>e !== '0').length < 5 ){
       person.no_telp_handphone = '082226059060'
     }
 
