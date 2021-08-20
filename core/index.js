@@ -17,6 +17,8 @@ module.exports = class Core {
   }
 
   async init(){
+    this.spinner.start(`init ${this.config.npm_package_name} ${new Date()}`)
+    await this.fetchKasus()
     this.spinner.succeed(`init ${this.config.npm_package_name} ${new Date()}`)
   }
 

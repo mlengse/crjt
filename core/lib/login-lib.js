@@ -2,6 +2,7 @@ exports._loginCorJat = async ({ that }) => {
   if(!that.page) {
     await that.initBrowser()
   }
+  
   let needLogin = await that.page.$('input#username')
 
   if(needLogin) {
@@ -17,26 +18,32 @@ exports._loginCorJat = async ({ that }) => {
     }
   
     let loginDone = await Promise.all([
-      that.page.waitForNavigation(waitOpt),
+      that.page.waitForNavigation(that.waitOpt),
       that.page.type('input#captcha-input', String.fromCharCode(13)),
       that.page.click('button.btn.btn-primary.btn-block.btn-lg.btn-submit[type="submit"]', {delay: 500}),
     ]);
 
     loginDone && that.spinner.succeed('logged in corona jateng')
-    await that.page.goto(`${that.config.CORJAT_URL}`, waitOpt)
+
+    await that.page.goto(`${that.config.CORJAT_URL}`, that.waitOpt)
+  }
+
+  let formTambah = await that.page.$('form#tambah')
+
+  if(!formTambah){
+    let notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
+    if(notifWall){
+      await that.clickBtn({
+        text: 'OK'
+      })
+    }
+  
+    await that.clickBtn({ text: 'Tambah Kasus'})
+  
+    await that.findXPathAndClick({ xpath: '//a[contains(., "WNI")]'})
+  
   
   }
-
-  let notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
-  if(notifWall){
-    await that.clickBtn({
-      text: 'OK'
-    })
-  }
-
-  await that.clickBtn({ text: 'Tambah Kasus'})
-
-  await that.findXPathAndClick({ xpath: '//a[contains(., "WNI")]'})
 
 }
 

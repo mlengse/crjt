@@ -6,8 +6,13 @@ module.exports = async (isPM2) => {
   try{
     await app.init()
 
-    await app.inputCorJat()
-   
+    for(let [id, nik] of Object.entries(Object.keys(app.people)))
+    if(id > 134)
+    {
+      app.spinner.succeed(`processing ${id}, ${nik}`)
+      await app.inputCorJat( { person: app.people[nik] } )
+    }
+
     await app.close(isPM2)
 
     console.log(`${app.config.npm_package_name} process done: ${new Date()}`)
