@@ -214,7 +214,7 @@ exports._initBrowser = async ({ that }) => {
     that.pages = await that.Browser.pages()
     that.page = that.pages[0]
 
-    that.page.on('requestfailed', request => {
+    that.page.on('requestfailed', async request => {
       if(request.failure() && !JSON.stringify(request.failure()).includes('ABORT')) {
         that.spinner.fail(`${request.url()} ${JSON.stringify(request.failure())}`)
         that.myEmitter.emit('reload')
