@@ -19,10 +19,9 @@ exports._inputCorJat = async ({ that }) => {
     let notifWall
   
     await that.loginCorJat()
-  
-    let formTambah = await that.page.$('form#tambah')
-  
-    if(!formTambah){
+
+    let inputNIK = await that.page.$('input#nik')
+    if(!inputNIK){
       notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
       if(notifWall){
         await that.clickBtn({
@@ -35,8 +34,14 @@ exports._inputCorJat = async ({ that }) => {
       await that.findXPathAndClick({ xpath: '//a[contains(., "WNI")]'})
     
       await that.waitFor({ selector: 'input#nik'})
-    
+
     }
+
+    // let formTambah = await that.page.$('form#tambah')
+  
+    // if(!formTambah){
+    
+    // }
   
     if(!that.person.checkNIK || (that.person.checkNIK && !that.person.checkNIK.error) || !that.person.checkDuplicate){
     
@@ -289,6 +294,8 @@ exports._inputCorJat = async ({ that }) => {
             that.mengcovid(),
             that.page.waitForResponse(response => response.url().toLowerCase().includes('odp'), that.waitOpt)
           ])
+
+          await that.page.waitForTimeout(1000)
       
           notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
           if(notifWall){
@@ -312,8 +319,8 @@ exports._inputCorJat = async ({ that }) => {
     that.spinner.fail(`${new Date()} ${JSON.stringify(that.person)}`)
     that.spinner.fail(`${new Date()} ${JSON.stringify(e)}`)
     if(JSON.stringify(e).includes('Timeout') || JSON.stringify(e).includes('reload')){
-      await that.page.reload()
-      // return await that.inputCorJat()
+      // await that.page.reload()
+      return await that.inputCorJat()
     }
   }
  
@@ -321,6 +328,8 @@ exports._inputCorJat = async ({ that }) => {
 
 exports._closeWarning = async ({ that, response }) => {
   response.error && that.spinner.fail(`${response.error} ${response.message}`)
+
+  await that.page.waitForTimeout(500)
 
   let notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
   if(notifWall){
