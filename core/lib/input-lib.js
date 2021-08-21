@@ -122,6 +122,21 @@ exports._inputCorJat = async ({ that, person }) => {
       val: person.checkNIK.capil_kel
     })
 
+    if(!person.checkNIK.capil_prov_id){
+      await that.page.evaluate( () => document.getElementById("ktp_province_id").value = "")
+      await that.page.type('#ktp_province_id', person.provinsi_domisili)
+    }
+
+    if(!person.checkNIK.capil_kab_id){
+      await that.page.evaluate( () => document.getElementById("ktp_district_id").value = "")
+      await that.page.type('#ktp_district_id', kabupaten_domisili)
+    }
+
+    if(!person.checkNIK.capil_prov_id){
+      await that.page.evaluate( () => document.getElementById("ktp_sub_district_id").value = "")
+      await that.page.type('#ktp_sub_district_id', person.kecamatan_domisili)
+    }
+
     if(!person.checkNIK.capil_rt){
       await that.page.evaluate( () => document.getElementById("ktp_rt").value = "")
       await that.page.type('#ktp_rt', '1')

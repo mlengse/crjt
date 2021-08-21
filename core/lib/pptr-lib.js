@@ -135,7 +135,7 @@ exports._typeAndSelect = async ({ that, selector, val }) => {
     if(els.length) for(let el of els){
       ada = await that.page.evaluate( el => el.innerText, el)
       if(ada.toLowerCase().includes(val.toLowerCase()) && !ada.toLowerCase().includes('dirawat') ){
-        console.log(ada)
+        // console.log(ada)
         hrfs = []
         await el.focus()
         await el.click()
