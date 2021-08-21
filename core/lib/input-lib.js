@@ -132,11 +132,6 @@ exports._inputCorJat = async ({ that }) => {
         val: that.person.desa_kelurahan_domisili
       })
   
-      await that.jqSelect({
-        sel: '#ktp_village_id',
-        val: that.person.checkNIK.capil_kel
-      })
-  
       if(!that.person.checkNIK.capil_prov_id){
         await that.page.evaluate( () => document.getElementById("ktp_province_id").value = "")
         await that.page.type('#ktp_province_id', that.person.provinsi_domisili)
@@ -152,6 +147,11 @@ exports._inputCorJat = async ({ that }) => {
         await that.page.type('#ktp_sub_district_id', that.person.kecamatan_domisili)
       }
   
+      if(!that.person.checkNIK.capil_kel){
+        await that.page.evaluate( () => document.getElementById("ktp_village_id").value = "")
+        await that.page.type('#ktp_village_id', that.person.desa_kelurahan_domisili)
+      }
+
       if(!that.person.checkNIK.capil_rt){
         await that.page.evaluate( () => document.getElementById("ktp_rt").value = "")
         await that.page.type('#ktp_rt', '1')
