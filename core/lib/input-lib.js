@@ -287,7 +287,7 @@ exports._inputCorJat = async ({ that }) => {
           !that.response && await Promise.all([
             that.clickBtn({ text: 'Simpan'}),
             that.mengcovid(),
-            that.page.waitForResponse(response => response.url().toLowerCase().includes('odp'))
+            that.page.waitForResponse(response => response.url().toLowerCase().includes('odp'), that.waitOpt)
           ])
       
           notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
