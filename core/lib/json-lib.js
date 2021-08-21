@@ -4,7 +4,7 @@ people.defaults({ people: [] }).write()
 
 exports.getPersonJSON = nik => (people.get('people').filter({ nik }).value())[0]
 exports.upsertPersonJSON = person => {
-  person = Object.assign({}, this.getPersonJSON(person.nik), person)
+  person = Object.assign({}, person, this.getPersonJSON(person.nik))
   !!this.getPersonJSON(person.nik) ? people.get('people').filter({ nik: person.nik }).assign(person).write() : people.get('people').push(person).write()
   return person
 }

@@ -38,7 +38,50 @@ exports._inputIfNoVal = async ({ that, selector, val }) => {
 
   let existVal = await that.page.$eval( selector, e => $(e).val())
   if(!existVal){
-    await that.page.$eval( selector, (e, val) => $(e).val(val), val)
+    await that.page.evaluate( (e, val) => {
+      $(e).val(val)
+      let regexCalendar = "^(?:(?:31(-)(?:0?[13578]|1[02]))\\1|(?:(?:29|30)(-)(?:0?[1,3-9]|1[0-2])\\2))(?:(?:1[6-9]|[2-9]\\d)?\\d{2})$|^(?:29(-)(?:0?2)\\3(?:(?:(?:1[6-9]|[2-9]\\d)?(?:0[48]|[2468][048]|[13579][26])|(?:(?:16|[2468][048]|[3579][26])00))))$|^(?:0?[1-9]|1\\d|2[0-8])(-)(?:(?:0?[1-9])|(?:1[0-2]))\\4(?:(?:1[6-9]|[2-9]\\d)?\\d{2})$"
+      const getAge = date => {
+        if (date.match(regexCalendar)) {
+          let dateString  = date.match("^(\\d{2})-(\\d{2})-(\\d{4})$")
+          let birthday = new Date( dateString[3], dateString[2]-1, dateString[1] );
+          let dobMonth= birthday.getMonth()+1;
+          let dobDay= birthday.getDate();
+          let dobYear= birthday.getFullYear();
+  
+          let now = new Date
+          let nowDay= now.getDate();
+          let nowMonth = now.getMonth() + 1;  //jan = 0 so month + 1
+          let nowYear= now.getFullYear();
+  
+          let ageYear = nowYear - dobYear;
+          let ageMonth = nowMonth - dobMonth;
+          let ageDay = nowDay- dobDay;
+          if (ageMonth < 0) {
+              ageYear--;
+              ageMonth = (12 + ageMonth);
+          }
+          if (nowDay < dobDay) {
+              ageMonth--;
+              ageDay = 30 + ageDay;
+              if(ageMonth<0){
+                  ageYear--;
+                  ageMonth+=12;
+              }
+          }
+          ageYear = (ageYear>0)?ageYear:0;
+          $('#age_year').val(ageYear)
+          $('#age_month').val(ageMonth)
+  
+        }
+
+      }
+      e === '#birth_date' && getAge(val)
+  }, selector, val)
+    // if(selector.toLowerCase().includes('birth')){
+    //   await that.page.evaluate(() => {
+    //   })
+    // }
   }
   // console.log(existVal)
 }
@@ -84,8 +127,17 @@ exports._jqSelect = async ({ that, sel, val, id }) => {
     that.spinner.succeed(`val ${val} options: ${options.length /**map(e => e.text) */}`)
     option = options.filter( e => e 
       && e.text 
-      && e.text.toLowerCase().split(' ').join('').includes(
-        val.toLowerCase().split(' ').join('')) 
+      && e.text.toLowerCase().split(' ').join('')
+      .split('(').join('')
+      .split(')').join('')
+      .split('/').join('')
+      .includes(
+        val.toLowerCase()
+        .split(' ').join('')
+        .split('(').join('')
+        .split(')').join('')
+        .split('/').join('')
+          ) 
         && !e.text.toLowerCase().includes('dirawat'))
   
     if(option.length){

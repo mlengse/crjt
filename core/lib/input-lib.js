@@ -68,7 +68,7 @@ exports._inputCorJat = async ({ that }) => {
       that.person.checkDuplicate && that.spinner.fail(`${that.person.checkDuplicate.error} ${that.person.checkDuplicate.message}`)
       that.person.checkNIK.error && that.spinner.fail(`${that.person.checkNIK.error} ${that.person.checkNIK.message}`)
     } 
-    if(!that.person.checkNIK || (that.person.checkNIK && !that.person.checkNIK.error && !Array.isArray(that.person.checkNIK))) {
+    if(!that.person.checkNIK || (that.person.checkNIK && !that.person.checkNIK.error)) {
       that.spinner.succeed(`input ${that.person.nama}`)
   
   
@@ -164,45 +164,52 @@ exports._inputCorJat = async ({ that }) => {
         val: that.person.desa_kelurahan_domisili
       })
   
-      if(!that.person.checkNIK.capil_prov_id){
+      if(!that.person.checkNIK.capil_kec_id || !that.person.checkNIK.capil_prov_id || !that.person.checkNIK.capil_kel_id || !that.person.checkNIK.capil_kab_id){
+        that.spinner.succeed(`ktp gak lengkap, isi ${that.person.provinsi_domisili}`)
         await Promise.all([
-          that.page.evaluate( prov => document.getElementById("ktp_province_id").value = prov, that.person.provinsi_domisili),
+          that.jqSelect({
+            sel: '#ktp_province_id',
+            val: that.person.provinsi_domisili
+          }),
           // await that.page.type('#ktp_province_id', that.person.provinsi_domisili)
           that.page.waitForResponse(response => response.url().toLowerCase().includes('area?type=kab&id='))
   
         ])
-      }
-  
-      if(!that.person.checkNIK.capil_kab_id){
+        that.spinner.succeed('ktp prop done')
         await Promise.all([
-          that.page.evaluate( kab => document.getElementById("ktp_district_id").value = kab, kabupaten_domisili),
+          that.jqSelect({
+            sel: '#ktp_district_id',
+            val: that.person.kabupaten_domisili
+          }),
           // await that.page.type('#ktp_district_id', kabupaten_domisili)
           that.page.waitForResponse(response => response.url().toLowerCase().includes('area?type=kec&id='))
   
         ])
-      }
-  
-      if(!that.person.checkNIK.capil_kec_id){
+        that.spinner.succeed('ktp kab done')
         await Promise.all([
-          that.page.evaluate( kec => document.getElementById("ktp_sub_district_id").value = kec, that.person.kecamatan_domisili),
+          that.jqSelect({
+            sel: '#ktp_sub_district_id',
+            val: that.person.kecamatan_domisili
+          }),
           // await that.page.type('#ktp_sub_district_id', that.person.kecamatan_domisili)
           that.page.waitForResponse(response => response.url().toLowerCase().includes('area?type=desa&id='))
   
         ])
+        that.spinner.succeed('ktp kec done')
+        that.jqSelect({
+          sel: '#ktp_village_id',
+          val: that.person.desa_kelurahan_domisili
+        }),
+        await that.page.type('#ktp_address', that.person.alamat_domisili || `${that.person.desa_kelurahan_domisili} ${that.person.rt}/${that.person.rw}`)
+        that.spinner.succeed('ktp des done')
       }
   
-      if(!that.person.checkNIK.capil_kel){
-        await that.page.evaluate( des => document.getElementById("ktp_village_id").value = des, that.person.desa_kelurahan_domisili)
-        // await that.page.type('#ktp_village_id', that.person.desa_kelurahan_domisili)
-      }
-
       if(!that.person.checkNIK.capil_rt){
         await that.page.evaluate( () => document.getElementById("ktp_rt").value = '1')
       }
       if(!that.person.checkNIK.capil_rw){
         await that.page.evaluate( () => document.getElementById("ktp_rw").value = "1")
       }
-  
   
       if(!that.person.checkDuplicate){
         if(that.person.rt === '0'){
@@ -218,7 +225,7 @@ exports._inputCorJat = async ({ that }) => {
         await that.page.evaluate( () => document.getElementById("rw").value = "")
         await that.page.type('#rw', that.person.rw)
         await that.page.evaluate( () => document.getElementById("address").value = "")
-        await that.page.type('#address', that.person.alamat_domisili)
+        await that.page.type('#address', that.person.alamat_domisili || `${that.person.desa_kelurahan_domisili} ${that.person.rt}/${that.person.rw}`)
     
         await that.page.evaluate( () => document.getElementById("common_condition").value = "")
         await that.page.type('#common_condition', 'baik')
@@ -300,8 +307,11 @@ exports._inputCorJat = async ({ that }) => {
     
         await that.page.evaluate( () => document.getElementById("swab_period_rdt").value = "")
         await that.page.type('#swab_period_rdt', '1')
+
+        // await that.checkDuplicate()
+        await that.page.waitForTimeout(1000)
   
-        if(that.response !== 'duplikasi') {
+        if(that.response !== 'duplikasi' || !that.person.checkDuplicate) {
           !that.response && await Promise.all([
             that.clickBtn({ text: 'Simpan'}),
             that.mengcovid(),
@@ -312,12 +322,6 @@ exports._inputCorJat = async ({ that }) => {
 
           await that.page.waitForTimeout(1000)
       
-          notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
-          if(notifWall){
-            await that.clickBtn({
-              text: 'OK'
-            })
-          }
       
   
         }
@@ -328,12 +332,20 @@ exports._inputCorJat = async ({ that }) => {
   
   
     }
+    notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
+    if(notifWall){
+      await that.clickBtn({
+        text: 'OK'
+      })
+    }
+
     // that.person = await that.upsertPerson({ person })
   
   }catch(e){
-    that.spinner.fail(`${new Date()} ${JSON.stringify(that.person)}`)
+    that.spinner.fail(`${new Date()} ${e}`)
     that.spinner.fail(`${new Date()} ${JSON.stringify(e)}`)
     if(JSON.stringify(e).includes('TIMED') || JSON.stringify(e).includes('Timeout') || JSON.stringify(e).includes('reload')){
+      that.spinner.fail(`${new Date()} ${JSON.stringify(that.person)}`)
       // await that.page.reload()
       return await that.inputCorJat()
     }
@@ -343,6 +355,10 @@ exports._inputCorJat = async ({ that }) => {
 
 exports._closeWarning = async ({ that, response }) => {
   response.error && that.spinner.fail(`${response.error} ${response.message}`)
+  if(response.error === 'Duplicate') {
+    that.spinner.succeed('duplikasi')
+    that.person.checkDuplicate = true
+  }
 
   await that.page.waitForTimeout(500)
 
