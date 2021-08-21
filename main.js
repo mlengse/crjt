@@ -9,11 +9,11 @@ module.exports = async (isPM2) => {
     await app.init()
 
     for(let [id, nik] of Object.entries(Object.keys(app.people)))
-    if(id >  150 /*&& exclude.indexOf(id) === -1*/)
+    if(id >  288 /*&& exclude.indexOf(id) === -1*/)
     {
       app.person = await app.upsertPerson({ person: app.people[nik] })
       app.spinner.succeed(`processing ${id}, ${nik}`)
-      await app.inputCorJat( { person: app.person } )
+      await app.inputCorJat()
       await app.upsertPerson({ person: app.person })
     }
 

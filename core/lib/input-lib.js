@@ -1,10 +1,10 @@
-exports._inputCorJat = async ({ that, person }) => {
+exports._inputCorJat = async ({ that }) => {
   try{
     that.response = false
     // that.spinner.start(`input corjat ${person.nama}`)
     // person = await that.upsertPerson({ person })
   
-    that.spinner.start(`input corjat ${JSON.stringify(person)}`)
+    that.spinner.start(`input corjat ${that.person.nik} ${that.person.nama}`)
     let notifWall
   
     await that.loginCorJat()
@@ -27,16 +27,16 @@ exports._inputCorJat = async ({ that, person }) => {
     
     }
   
-    if(!person.checkNIK || (person.checkNIK && !person.checkNIK.error) || !person.checkDuplicate){
+    if(!that.person.checkNIK || (that.person.checkNIK && !that.person.checkNIK.error) || !that.person.checkDuplicate){
     
-      await that.page.evaluate( () => document.getElementById("nik").value = "")
+      await that.page.evaluate( nik => document.getElementById("nik").value = nik, that.person.nik)
     
-      await that.page.type('input#nik', person.nik)
+      // await that.page.type('input#nik', person.nik)
     
       await Promise.all([
         that.page.waitForResponse(async response => {
-          if(response.url().includes(`check-nik?nik=${person.nik}`)){
-            person.checkNIK = await response.json()
+          if(response.url().includes(`check-nik?nik=${that.person.nik}`)){
+            that.person.checkNIK = await response.json()
             return true
           }
           return false
@@ -46,11 +46,12 @@ exports._inputCorJat = async ({ that, person }) => {
   
     }
     
-    if((person.checkNIK && person.checkNIK.error) || (person.checkDuplicate)){
-      await that.upsertPerson({ person })
-      person.checkDuplicate && that.spinner.fail(`${person.checkDuplicate.error} ${person.checkDuplicate.message}`)
-      person.checkNIK.error && that.spinner.fail(`${person.checkNIK.error} ${person.checkNIK.message}`)
+    if((that.person.checkNIK && that.person.checkNIK.error) || (that.person.checkDuplicate)){
+      // await that.upsertPerson({ person })
+      that.person.checkDuplicate && that.spinner.fail(`${that.person.checkDuplicate.error} ${that.person.checkDuplicate.message}`)
+      that.person.checkNIK.error && that.spinner.fail(`${that.person.checkNIK.error} ${that.person.checkNIK.message}`)
     } 
+    await that.page.waitForTimeout(500)
   
     notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
     if(notifWall){
@@ -59,32 +60,32 @@ exports._inputCorJat = async ({ that, person }) => {
       })
     }
   
-    if(!person.checkNIK || (person.checkNIK && !person.checkNIK.error && !Array.isArray(person.checkNIK))) {
-      that.spinner.succeed(`input ${person.nama}`)
+    if(!that.person.checkNIK || (that.person.checkNIK && !that.person.checkNIK.error && !Array.isArray(that.person.checkNIK))) {
+      that.spinner.succeed(`input ${that.person.nama}`)
   
       await that.page.waitForTimeout(500)
   
       await that.inputIfNoVal({ 
         selector: '#name',
-        val: person.nama
+        val: that.person.nama
       })
   
       await that.inputIfNoVal({ 
         selector: '#birth_date',
-        val: that.convertFromAAR2CJ(person.tanggal_lahir)
+        val: that.convertFromAAR2CJ(that.person.tanggal_lahir)
       })
   
-      if(!person.no_telp_handphone || person.no_telp_handphone.split('').filter(e=>e !== '0').length < 5 ){
-        person.no_telp_handphone = that.config.PHONE
+      if(!that.person.no_telp_handphone || that.person.no_telp_handphone.split('').filter(e=>e !== '0').length < 5 ){
+        that.person.no_telp_handphone = that.config.PHONE
       }
   
       await that.inputIfNoVal({
         selector: '#phone_number',
-        val: person.no_telp_handphone
+        val: that.person.no_telp_handphone
       })
   
       await that.selectChoice({
-        val: person.jenis_kelamin || person.capil_sex || 'L',
+        val: that.person.jenis_kelamin || that.person.capil_sex || 'L',
         choice: {
           L: "#sexL",
           P: "#sexP"
@@ -93,90 +94,88 @@ exports._inputCorJat = async ({ that, person }) => {
   
       // await that.typeAndSelect({
       //   selector: 'span.select2-container[data-select2-id="2239"]',
-      //   val: person.checkNIK && person.checkNIK['capil_job '] ? person.checkNIK['capil_job '] : 'tidak tahu'
+      //   val: that.person.checkNIK && that.person.checkNIK['capil_job '] ? that.person.checkNIK['capil_job '] : 'tidak tahu'
       // })
       await that.jqSelect({
         sel: '#job',
-        val: person.checkNIK && person.checkNIK['capil_job '] ? person.checkNIK['capil_job '] : 'tidak tahu'
+        val: that.person.checkNIK && that.person.checkNIK['capil_job '] ? that.person.checkNIK['capil_job '] : 'tidak tahu'
       })
   
   
       await that.jqSelect({
         sel: '#province_id',
-        val: person.provinsi_domisili
+        val: that.person.provinsi_domisili
       })
       await that.jqSelect({
         sel: '#district_id',
-        val: person.kabupaten_domisili
+        val: that.person.kabupaten_domisili
       })
       await that.jqSelect({
         sel: '#sub_district_id',
-        val: person.kecamatan_domisili
+        val: that.person.kecamatan_domisili
       })
       await that.jqSelect({
         sel: '#village_id',
-        val: person.desa_kelurahan_domisili
+        val: that.person.desa_kelurahan_domisili
       })
   
       await that.jqSelect({
         sel: '#ktp_village_id',
-        val: person.checkNIK.capil_kel
+        val: that.person.checkNIK.capil_kel
       })
   
-      if(!person.checkNIK.capil_prov_id){
+      if(!that.person.checkNIK.capil_prov_id){
         await that.page.evaluate( () => document.getElementById("ktp_province_id").value = "")
-        await that.page.type('#ktp_province_id', person.provinsi_domisili)
+        await that.page.type('#ktp_province_id', that.person.provinsi_domisili)
       }
   
-      if(!person.checkNIK.capil_kab_id){
+      if(!that.person.checkNIK.capil_kab_id){
         await that.page.evaluate( () => document.getElementById("ktp_district_id").value = "")
         await that.page.type('#ktp_district_id', kabupaten_domisili)
       }
   
-      if(!person.checkNIK.capil_prov_id){
+      if(!that.person.checkNIK.capil_prov_id){
         await that.page.evaluate( () => document.getElementById("ktp_sub_district_id").value = "")
-        await that.page.type('#ktp_sub_district_id', person.kecamatan_domisili)
+        await that.page.type('#ktp_sub_district_id', that.person.kecamatan_domisili)
       }
   
-      if(!person.checkNIK.capil_rt){
+      if(!that.person.checkNIK.capil_rt){
         await that.page.evaluate( () => document.getElementById("ktp_rt").value = "")
         await that.page.type('#ktp_rt', '1')
       }
-      if(!person.checkNIK.capil_rw){
+      if(!that.person.checkNIK.capil_rw){
         await that.page.evaluate( () => document.getElementById("ktp_rw").value = "")
         await that.page.type('#ktp_rw', '1')
       }
   
   
-      person = await that.cekDuplikat({ person })
-  
-      if(!person.checkDuplicate){
-        if(person.rt === '0'){
-          person.rt = '1'
+      if(!that.person.checkDuplicate){
+        if(that.person.rt === '0'){
+          that.person.rt = '1'
         }
 
-        if(person.rw === '0'){
-          person.rw = '1'
+        if(that.person.rw === '0'){
+          that.person.rw = '1'
         }
     
         await that.page.evaluate( () => document.getElementById("rt").value = "")
-        await that.page.type('#rt', person.rt)
+        await that.page.type('#rt', that.person.rt)
         await that.page.evaluate( () => document.getElementById("rw").value = "")
-        await that.page.type('#rw', person.rw)
+        await that.page.type('#rw', that.person.rw)
         await that.page.evaluate( () => document.getElementById("address").value = "")
-        await that.page.type('#address', person.alamat_domisili)
+        await that.page.type('#address', that.person.alamat_domisili)
     
         await that.page.evaluate( () => document.getElementById("common_condition").value = "")
         await that.page.type('#common_condition', 'baik')
         await that.page.evaluate( () => document.getElementById("treatment").value = "")
         await that.page.type('#treatment', 'isolasi')
-        await that.page.$eval('#tgl_lapor', (e, tgl ) => $(e).val(tgl),  that.convertFromAAR2CJ(person.tanggal_pemeriksaan))
+        await that.page.$eval('#tgl_lapor', (e, tgl ) => $(e).val(tgl),  that.convertFromAAR2CJ(that.person.tanggal_pemeriksaan))
     
         // await that.find$AndClick({ $: })
     
         await that.jqSelect({
           sel: '#status_id',
-          val: person.hasil_pemeriksaan === 'POSITIF' ? 'terkonfirmasi' : person.tujuan_pemeriksaan === 'SKRINING' ? 'screening' : person.tujuan_pemeriksaan
+          val: that.person.hasil_pemeriksaan === 'POSITIF' ? 'terkonfirmasi' : that.person.tujuan_pemeriksaan === 'SKRINING' ? 'screening' : that.person.tujuan_pemeriksaan
         })
     
         // await that.typeAndSelect({
@@ -189,7 +188,7 @@ exports._inputCorJat = async ({ that, person }) => {
         await that.page.select('select#swab_type', '2')
         // await that.page.waitForTimeout(500)
     
-        if(person.hasil_pemeriksaan === 'POSITIF') {
+        if(that.person.hasil_pemeriksaan === 'POSITIF') {
           await that.find$AndClick({ $: '#resultPositif'})
     
         } else {
@@ -200,7 +199,7 @@ exports._inputCorJat = async ({ that, person }) => {
     
         await that.find$AndClick({ $: 'button[data-value="B"]'})
     
-        await that.page.waitForTimeout(100)
+        await that.page.waitForTimeout(500)
         notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
         if(notifWall){
           that.spinner.succeed('di sinikah?')
@@ -210,11 +209,11 @@ exports._inputCorJat = async ({ that, person }) => {
           })
         }
     
-        // await that.page.waitForTimeout(100)
+        // await that.page.waitForTimeout(500)
     
         // notifWall = false
         // while(!notifWall){
-        //   await that.page.waitForTimeout(100)
+        //   await that.page.waitForTimeout(500)
         //   notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
         //   if(notifWall){
         //     console.log('ada')
@@ -225,87 +224,62 @@ exports._inputCorJat = async ({ that, person }) => {
     
         // }
     
-        await that.page.$eval('#test_date_rdt', (e, tgl ) => $(e).val(tgl),  that.convertFromAAR2CJ(person.tanggal_pemeriksaan))
-        if(person.status_pembiayaan.toLowerCase().includes('tidak')) {
+        await that.page.$eval('#test_date_rdt', (e, tgl ) => $(e).val(tgl),  that.convertFromAAR2CJ(that.person.tanggal_pemeriksaan))
+        if(that.person.status_pembiayaan.toLowerCase().includes('tidak')) {
           await that.find$AndClick({ $: '#paymentTidakBerbayar'})
         } else {
           await that.find$AndClick({ $: '#paymentBerbayar'})
         }
     
         await that.page.evaluate( () => document.getElementById("speciment_code_rdt").value = "")
-        if(!person.nomor_spesimen) {
-          person.nomor_spesimen = that.unixTime()
+        if(!that.person.nomor_spesimen) {
+          that.person.nomor_spesimen = that.unixTime()
         }
     
-        await that.page.type('#speciment_code_rdt', person.nomor_spesimen)
+        await that.page.type('#speciment_code_rdt', that.person.nomor_spesimen)
     
         await that.jqSelect({
           sel: '#purpose-rdt',
-          val: person.tujuan_pemeriksaan  === 'SKRINING' ? 'Alasan lain' : person.tujuan_pemeriksaan
+          val: that.person.tujuan_pemeriksaan  === 'SKRINING' ? 'Alasan lain' : that.person.tujuan_pemeriksaan
         })
     
         await that.page.evaluate( () => document.getElementById("swab_period_rdt").value = "")
         await that.page.type('#swab_period_rdt', '1')
 
-        // if(that)
-    
+        if(that.response !== 'duplikasi') {
+          !that.response && await Promise.all([
+            that.clickBtn({ text: 'Simpan'}),
+            that.mengcovid(),
+            that.page.waitForResponse(response => response.url().toLowerCase().includes('odp'))
+          ])
+      
+          notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
+          if(notifWall){
+            await that.clickBtn({
+              text: 'OK'
+            })
+          }
+      
   
-        !that.response && await Promise.all([
-          that.clickBtn({ text: 'Simpan'}),
-          that.mengcovid(),
-          that.page.waitForResponse(response => response.url().toLowerCase().includes('odp'))
-        ])
-    
-        notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
-        if(notifWall){
-          await that.clickBtn({
-            text: 'OK'
-          })
         }
-    
+
+  
       }
   
   
   
     }
-    person = await that.upsertPerson({ person })
+    // that.person = await that.upsertPerson({ person })
    
   }catch(e){
-    that.spinner.fail(`${new Date()} ${JSON.stringify(person)}`)
+    that.spinner.fail(`${new Date()} ${JSON.stringify(that.person)}`)
     that.spinner.fail(`${new Date()} ${JSON.stringify(e)}`)
     if(JSON.stringify(e).includes('Timeout')){
       await that.page.reload()
-      await that.inputCorJat({ person })
+      await that.inputCorJat()
     }
   }
  
-}
-
-exports._cekDuplikat = async ({ that, person }) => {
-  // let dupeBtn = await that.page.$x('//button[contains(., "DUPLIKAT")]')
-  // if(dupeBtn && await that.isVisible({ el: dupeBtn[0]})) {
-  //   that.spinner.succeed('tombol dupl ada')
-  //   await Promise.all([
-  //     that.clickBtn({ text: 'DUPLIKAT'}),
-  //     that.page.waitForResponse( async response => {
-  //       if(response.url().toLowerCase().includes('check-dupl')){
-  //         person.checkDuplicate = await response.json()
-  //         return true
-  //       }
-  //       return false
-  //     }),
-  //   ])
-  
-  // }
-  // person.checkDuplicate && person.checkDuplicate.error && that.spinner.fail(`${person.checkDuplicate.error} ${person.checkDuplicate.message}`)
-  // let notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
-  // if(notifWall){
-  //   await that.clickBtn({
-  //     text: 'OK'
-  //   })
-  // }
-  return person
-
 }
 
 exports._closeWarning = async ({ that, response }) => {
@@ -321,7 +295,7 @@ exports._closeWarning = async ({ that, response }) => {
 }
 
 exports._mengcovid = async ({ that }) => {
-  await that.page.waitForTimeout(100)
+  await that.page.waitForTimeout(500)
   let visible = false
   for(let el of await that.page.$x(`//button[contains(., "Iya")]`)){
     await that.page.evaluate(e => {
@@ -335,6 +309,6 @@ exports._mengcovid = async ({ that }) => {
     }
   }
 
-  await that.page.waitForTimeout(100)
+  await that.page.waitForTimeout(500)
   
 }

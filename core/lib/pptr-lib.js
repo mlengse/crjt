@@ -163,7 +163,7 @@ exports._find$AndClick = async ({ that, $ }) => {
       }
     }
 
-    await that.page.waitForTimeout(100)
+    await that.page.waitForTimeout(500)
   
   }
   await that.page.waitForTimeout(500)
@@ -173,7 +173,7 @@ exports._find$AndClick = async ({ that, $ }) => {
 exports._waitFor = async({ that, selector}) => {
   let el = await that.page.$(selector)
   while(!el){
-    await that.page.waitForTimeout(100)
+    await that.page.waitForTimeout(500)
     el = await that.page.$(selector)
   }
   await that.page.waitForTimeout(500)
@@ -201,7 +201,7 @@ exports._findXPathAndClick = async ({ that, xpath }) => {
       }
     }
 
-    await that.page.waitForTimeout(100)
+    await that.page.waitForTimeout(500)
   
   }
   await that.page.waitForTimeout(500)
@@ -218,18 +218,20 @@ exports._initBrowser = async ({ that }) => {
       if(request.failure() && !JSON.stringify(request.failure()).includes('ABORT')) {
         that.spinner.fail(`${request.url()} ${JSON.stringify(request.failure())}`)
         await that.page.reload()
-        await that.inputCorJat({ person: that.person })
+        await that.inputCorJat()
       }
       // return
     })
 
     that.page.on('response', async response => {
+      that.response = ''
       if(!response.ok()) {
         that.response = `${response.url()} ${response.status()} ${response.statusText()}`
         that.spinner.fail(that.response)
         await that.closeWarning({response: that.response})
         if(that.response.includes('Unprocessable')){
-          await that.inputCorjat({ person: that.person })
+          await that.page.reload()
+          await that.inputCorJat()
         }
       }
       if(response.request().resourceType() === 'xhr' && response.url().includes('dupl')){
