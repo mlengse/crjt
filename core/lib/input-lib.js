@@ -74,7 +74,7 @@ exports._inputCorJat = async ({ that, person }) => {
     })
 
     if(!person.no_telp_handphone || person.no_telp_handphone.split('').filter(e=>e !== '0').length < 5 ){
-      person.no_telp_handphone = '082226059060'
+      person.no_telp_handphone = that.config.PHONE
     }
 
     await that.inputIfNoVal({
