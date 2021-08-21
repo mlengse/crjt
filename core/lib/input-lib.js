@@ -63,19 +63,21 @@ exports._inputCorJat = async ({ that }) => {
       that.person.checkDuplicate && that.spinner.fail(`${that.person.checkDuplicate.error} ${that.person.checkDuplicate.message}`)
       that.person.checkNIK.error && that.spinner.fail(`${that.person.checkNIK.error} ${that.person.checkNIK.message}`)
     } 
-    await that.page.waitForTimeout(100)
-  
-    notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
-    if(notifWall){
-      await that.clickBtn({
-        text: 'OK'
-      })
-      that.page.waitForNavigation(that.waitOpt)
-    }
-  
     if(!that.person.checkNIK || (that.person.checkNIK && !that.person.checkNIK.error && !Array.isArray(that.person.checkNIK))) {
       that.spinner.succeed(`input ${that.person.nama}`)
   
+  
+      notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
+      if(notifWall){
+        that.spinner.succeed('aku opo kae')
+        await Promise.all([
+          that.clickBtn({
+            text: 'OK'
+          }),
+        ])
+      }
+    
+
       // await that.page.waitForTimeout(100)
   
       await that.inputIfNoVal({ 
@@ -119,46 +121,50 @@ exports._inputCorJat = async ({ that }) => {
         sel: '#province_id',
         val: that.person.provinsi_domisili
       })
+      await that.page.waitForResponse(response => response.url().toLowerCase().includes('area?type=kab&id='))
       await that.jqSelect({
         sel: '#district_id',
         val: that.person.kabupaten_domisili
       })
+      await that.page.waitForResponse(response => response.url().toLowerCase().includes('area?type=kec&id='))
       await that.jqSelect({
         sel: '#sub_district_id',
         val: that.person.kecamatan_domisili
       })
+      await that.page.waitForResponse(response => response.url().toLowerCase().includes('area?type=desa&id='))
       await that.jqSelect({
         sel: '#village_id',
         val: that.person.desa_kelurahan_domisili
       })
   
       if(!that.person.checkNIK.capil_prov_id){
-        await that.page.evaluate( () => document.getElementById("ktp_province_id").value = "")
-        await that.page.type('#ktp_province_id', that.person.provinsi_domisili)
+        await that.page.evaluate( prov => document.getElementById("ktp_province_id").value = prov, that.person.provinsi_domisili)
+        // await that.page.type('#ktp_province_id', that.person.provinsi_domisili)
+        await that.page.waitForResponse(response => response.url().toLowerCase().includes('area?type=kab&id='))
       }
   
       if(!that.person.checkNIK.capil_kab_id){
-        await that.page.evaluate( () => document.getElementById("ktp_district_id").value = "")
-        await that.page.type('#ktp_district_id', kabupaten_domisili)
+        await that.page.evaluate( kab => document.getElementById("ktp_district_id").value = kab, kabupaten_domisili)
+        // await that.page.type('#ktp_district_id', kabupaten_domisili)
+        await that.page.waitForResponse(response => response.url().toLowerCase().includes('area?type=kec&id='))
       }
   
-      if(!that.person.checkNIK.capil_prov_id){
-        await that.page.evaluate( () => document.getElementById("ktp_sub_district_id").value = "")
-        await that.page.type('#ktp_sub_district_id', that.person.kecamatan_domisili)
+      if(!that.person.checkNIK.capil_kec_id){
+        await that.page.evaluate( kec => document.getElementById("ktp_sub_district_id").value = kec, that.person.kecamatan_domisili)
+        // await that.page.type('#ktp_sub_district_id', that.person.kecamatan_domisili)
+        await that.page.waitForResponse(response => response.url().toLowerCase().includes('area?type=desa&id='))
       }
   
       if(!that.person.checkNIK.capil_kel){
-        await that.page.evaluate( () => document.getElementById("ktp_village_id").value = "")
-        await that.page.type('#ktp_village_id', that.person.desa_kelurahan_domisili)
+        await that.page.evaluate( des => document.getElementById("ktp_village_id").value = des, that.person.desa_kelurahan_domisili)
+        // await that.page.type('#ktp_village_id', that.person.desa_kelurahan_domisili)
       }
 
       if(!that.person.checkNIK.capil_rt){
-        await that.page.evaluate( () => document.getElementById("ktp_rt").value = "")
-        await that.page.type('#ktp_rt', '1')
+        await that.page.evaluate( () => document.getElementById("ktp_rt").value = '1')
       }
       if(!that.person.checkNIK.capil_rw){
-        await that.page.evaluate( () => document.getElementById("ktp_rw").value = "")
-        await that.page.type('#ktp_rw', '1')
+        await that.page.evaluate( () => document.getElementById("ktp_rw").value = "1")
       }
   
   
@@ -289,7 +295,7 @@ exports._inputCorJat = async ({ that }) => {
     that.spinner.fail(`${new Date()} ${JSON.stringify(e)}`)
     if(JSON.stringify(e).includes('Timeout') || JSON.stringify(e).includes('reload')){
       await that.page.reload()
-      return await that.inputCorJat()
+      // return await that.inputCorJat()
     }
   }
  
