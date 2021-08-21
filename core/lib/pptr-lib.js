@@ -53,7 +53,7 @@ exports._selectChoice =  async ({ that, val, choice }) => {
 
   that.spinner.start(`selectChoice ${val}`)
 
-  await that.waitFor({ selector: choice[val]})
+  await that.waitFor({ selector: choice[val.toUpperCase()]})
 
   // for(let c of Object.keys(choice)){
   //   await that.waitFor({

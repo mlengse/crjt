@@ -116,8 +116,8 @@ exports._inputCorJat = async ({ that }) => {
   
       await that.page.evaluate( tlp => document.getElementById("phone_number").value = tlp, that.person.no_telp_handphone)
   
-      await that.selectChoice({
-        val: that.person.jenis_kelamin || that.person.capil_sex || 'L',
+      !that.person.checkNIK.capil_sex && await that.selectChoice({
+        val: that.person.jenis_kelamin || that.person.checkNIK.capil_sex || 'L',
         choice: {
           L: "#sexL",
           P: "#sexP"
@@ -240,13 +240,13 @@ exports._inputCorJat = async ({ that }) => {
         await that.page.evaluate( () => document.getElementById("common_condition").value = 'baik')
         await that.page.evaluate( () => document.getElementById("treatment").value = 'isolasi')
 
-        await that.page.$eval('#tgl_lapor', (e, tgl ) => $(e).val(tgl),  that.convertFromAAR2CJ(that.person.tanggal_pemeriksaan))
+        await that.page.$eval('#tgl_lapor', (e, tgl ) => $(e).val(tgl),  that.person.tanggal_pemeriksaan)
     
         // await that.find$AndClick({ $: })
     
         await that.jqSelect({
           sel: '#status_id',
-          val: that.person.hasil_pemeriksaan === 'POSITIF' ? 'terkonfirmasi' : that.person.tujuan_pemeriksaan === 'SKRINING' ? 'screening' : that.person.tujuan_pemeriksaan
+          val: that.person.hasil_pemeriksaan === 'POSITIF' ? 'terkonfirmasi' : that.person.tujuan_pemeriksaan.toLowerCase().includes('ning') ? 'screening' : that.person.tujuan_pemeriksaan && that.person.tujuan_pemeriksaan.toLowerCase().includes('spe') ? 'Suspe' : 'kontak'
         })
     
         await that.waitFor({ selector: 'select#swab_type'})
@@ -277,7 +277,8 @@ exports._inputCorJat = async ({ that }) => {
             })
           }
       
-          await that.page.$eval('#test_date_rdt', (e, tgl ) => $(e).val(tgl),  that.convertFromAAR2CJ(that.person.tanggal_pemeriksaan))
+          await that.page.evaluate( tgl  => $('#test_date_rdt').val(tgl),  that.person.tanggal_pemeriksaan)
+
           // if(that.person.status_pembiayaan.toLowerCase().includes('tidak')) {
             await that.find$AndClick({ $: '#paymentTidakBerbayar'})
           // } else {
@@ -291,7 +292,7 @@ exports._inputCorJat = async ({ that }) => {
       
           await that.jqSelect({
             sel: '#purpose-rdt',
-            val: that.person.tujuan_pemeriksaan  === 'SKRINING' ? 'Alasan lain' : that.person.tujuan_pemeriksaan
+            val: that.person.tujuan_pemeriksaan && that.person.tujuan_pemeriksaan.toLowerCase().includes('ning') ? 'Alasan lain' : that.person.tujuan_pemeriksaan.toLowerCase().includes('spe') ? 'Suspe' : 'kontak'
           })
       
           await that.page.evaluate( () => document.getElementById("swab_period_rdt").value = "")
@@ -334,13 +335,12 @@ exports._inputCorJat = async ({ that }) => {
   }catch(e){
     that.spinner.fail(`${new Date()} ${e}`)
     that.spinner.fail(`${new Date()} ${JSON.stringify(e)}`)
+    console.log(that.person)
     if(`${e}`.includes('TypeError')){
-      console.log(e)
-      that.spinner.fail(`${new Date()} ${JSON.stringify(that.person)}`)
       return
     }
     if(`${e}`.includes('reload') || `${e}`.includes('ERR_')||JSON.stringify(e).includes('TIMED') || JSON.stringify(e).includes('Timeout') || JSON.stringify(e).includes('reload')){
-      that.spinner.fail(`${new Date()} ${JSON.stringify(that.person)}`)
+      // that.spinner.fail(`${new Date()} ${JSON.stringify(that.person)}`)
       // await that.page.reload()
       return await that.inputCorJat()
     }
@@ -382,5 +382,5 @@ exports._mengcovid = async ({ that }) => {
   }
 
   await that.page.waitForTimeout(100)
-  
+  that.spinner.succeed(`${that.person.nama} POSITIF ${that.person.tanggal_pemeriksaan}`)
 }

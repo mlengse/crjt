@@ -26,6 +26,8 @@ exports._fixTglLahir = async ({that, person}) => {
   if(tgl.includes('date')){
     console.log(person.tanggal_lahir.length, person.tanggal_lahir)
     console.log(person)
+  } else {
+    person.tanggal_lahir = tgl
   }
   return person
 

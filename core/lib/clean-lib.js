@@ -89,6 +89,8 @@ exports._cleanData = async ({ that }) => {
       console.log(person)
     }
 
+    person.tanggal_pemeriksaan = tgl
+
     if(!person.hasil_pemeriksaan || (person.hasil_pemeriksaan && person.hasil_pemeriksaan.toLowerCase() !== 'positif' && person.hasil_pemeriksaan.toLowerCase() !== 'negatif')){
       if(person.hasil_pemeriksaan_spesimen){
         person.hasil_pemeriksaan = person.hasil_pemeriksaan_spesimen.toUpperCase()
