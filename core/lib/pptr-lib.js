@@ -229,7 +229,7 @@ exports._initBrowser = async ({ that }) => {
         that.response = `${response.url()} ${response.status()} ${response.statusText()}`
         that.spinner.fail(that.response)
         await that.closeWarning({response: that.response})
-        if(that.response.includes('Unprocessable')){
+        if(typeof that.response === 'String' && that.response.includes('Unprocessable')){
           await that.page.reload()
           await that.inputCorJat()
         }
