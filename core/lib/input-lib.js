@@ -1,14 +1,14 @@
-const EventEmitter = require('events');
-class MyEmitter extends EventEmitter {}
+// const EventEmitter = require('events');
+// class MyEmitter extends EventEmitter {}
 
-exports.myEmitter = new MyEmitter();
+// exports.myEmitter = new MyEmitter();
 
 exports._inputCorJat = async ({ that }) => {
   
-  that.myEmitter.on('reload', () => {
-    that.myEmitter.removeListener('reload', () => {})
-    throw new Error('need reload')
-  })
+  // that.myEmitter.on('reload', () => {
+  //   that.myEmitter.removeListener('reload', () => {})
+  //   throw new Error('need reload')
+  // })
 
   try{
     that.response = false
