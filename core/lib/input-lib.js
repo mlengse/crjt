@@ -117,42 +117,60 @@ exports._inputCorJat = async ({ that }) => {
       })
   
   
-      await that.jqSelect({
-        sel: '#province_id',
-        val: that.person.provinsi_domisili
-      })
-      await that.page.waitForResponse(response => response.url().toLowerCase().includes('area?type=kab&id='))
-      await that.jqSelect({
-        sel: '#district_id',
-        val: that.person.kabupaten_domisili
-      })
-      await that.page.waitForResponse(response => response.url().toLowerCase().includes('area?type=kec&id='))
-      await that.jqSelect({
-        sel: '#sub_district_id',
-        val: that.person.kecamatan_domisili
-      })
-      await that.page.waitForResponse(response => response.url().toLowerCase().includes('area?type=desa&id='))
+      // await that.jqSelect({
+      //   sel: '#province_id',
+      //   val: that.person.provinsi_domisili
+      // })
+      await Promise.all([
+        that.jqSelect({
+          sel: '#district_id',
+          val: that.person.kabupaten_domisili
+        }),
+        // await that.page.waitForResponse(response => response.url().toLowerCase().includes('area?type=kab&id='))
+        that.page.waitForResponse(response => response.url().toLowerCase().includes('area?type=kec&id='))
+  
+      ])
+
+      await Promise.all([
+        that.jqSelect({
+          sel: '#sub_district_id',
+          val: that.person.kecamatan_domisili
+        }),
+
+        that.page.waitForResponse(response => response.url().toLowerCase().includes('area?type=desa&id='))
+  
+      ])
+
       await that.jqSelect({
         sel: '#village_id',
         val: that.person.desa_kelurahan_domisili
       })
   
       if(!that.person.checkNIK.capil_prov_id){
-        await that.page.evaluate( prov => document.getElementById("ktp_province_id").value = prov, that.person.provinsi_domisili)
-        // await that.page.type('#ktp_province_id', that.person.provinsi_domisili)
-        await that.page.waitForResponse(response => response.url().toLowerCase().includes('area?type=kab&id='))
+        await Promise.all([
+          that.page.evaluate( prov => document.getElementById("ktp_province_id").value = prov, that.person.provinsi_domisili),
+          // await that.page.type('#ktp_province_id', that.person.provinsi_domisili)
+          that.page.waitForResponse(response => response.url().toLowerCase().includes('area?type=kab&id='))
+  
+        ])
       }
   
       if(!that.person.checkNIK.capil_kab_id){
-        await that.page.evaluate( kab => document.getElementById("ktp_district_id").value = kab, kabupaten_domisili)
-        // await that.page.type('#ktp_district_id', kabupaten_domisili)
-        await that.page.waitForResponse(response => response.url().toLowerCase().includes('area?type=kec&id='))
+        await Promise.all([
+          that.page.evaluate( kab => document.getElementById("ktp_district_id").value = kab, kabupaten_domisili),
+          // await that.page.type('#ktp_district_id', kabupaten_domisili)
+          that.page.waitForResponse(response => response.url().toLowerCase().includes('area?type=kec&id='))
+  
+        ])
       }
   
       if(!that.person.checkNIK.capil_kec_id){
-        await that.page.evaluate( kec => document.getElementById("ktp_sub_district_id").value = kec, that.person.kecamatan_domisili)
-        // await that.page.type('#ktp_sub_district_id', that.person.kecamatan_domisili)
-        await that.page.waitForResponse(response => response.url().toLowerCase().includes('area?type=desa&id='))
+        await Promise.all([
+          that.page.evaluate( kec => document.getElementById("ktp_sub_district_id").value = kec, that.person.kecamatan_domisili),
+          // await that.page.type('#ktp_sub_district_id', that.person.kecamatan_domisili)
+          that.page.waitForResponse(response => response.url().toLowerCase().includes('area?type=desa&id='))
+  
+        ])
       }
   
       if(!that.person.checkNIK.capil_kel){
