@@ -52,7 +52,8 @@ exports._inputCorJat = async ({ that }) => {
           }
           return false
         }),
-        that.find$AndClick({ $: 'button#cek-nik'})
+        that.find$AndClick({ $: 'button#cek-nik'}),
+
       ])
   
     }
@@ -62,19 +63,20 @@ exports._inputCorJat = async ({ that }) => {
       that.person.checkDuplicate && that.spinner.fail(`${that.person.checkDuplicate.error} ${that.person.checkDuplicate.message}`)
       that.person.checkNIK.error && that.spinner.fail(`${that.person.checkNIK.error} ${that.person.checkNIK.message}`)
     } 
-    await that.page.waitForTimeout(500)
+    await that.page.waitForTimeout(100)
   
     notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
     if(notifWall){
       await that.clickBtn({
         text: 'OK'
       })
+      that.page.waitForNavigation(that.waitOpt)
     }
   
     if(!that.person.checkNIK || (that.person.checkNIK && !that.person.checkNIK.error && !Array.isArray(that.person.checkNIK))) {
       that.spinner.succeed(`input ${that.person.nama}`)
   
-      await that.page.waitForTimeout(500)
+      // await that.page.waitForTimeout(100)
   
       await that.inputIfNoVal({ 
         selector: '#name',
@@ -197,7 +199,7 @@ exports._inputCorJat = async ({ that }) => {
         await that.waitFor({ selector: 'select#swab_type'})
     
         await that.page.select('select#swab_type', '2')
-        // await that.page.waitForTimeout(500)
+        // await that.page.waitForTimeout(100)
     
         if(that.person.hasil_pemeriksaan === 'POSITIF') {
           await that.find$AndClick({ $: '#resultPositif'})
@@ -210,7 +212,7 @@ exports._inputCorJat = async ({ that }) => {
     
         await that.find$AndClick({ $: 'button[data-value="B"]'})
     
-        await that.page.waitForTimeout(500)
+        await that.page.waitForTimeout(100)
         notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
         if(notifWall){
           that.spinner.succeed('di sinikah?')
@@ -220,11 +222,11 @@ exports._inputCorJat = async ({ that }) => {
           })
         }
     
-        // await that.page.waitForTimeout(500)
+        // await that.page.waitForTimeout(100)
     
         // notifWall = false
         // while(!notifWall){
-        //   await that.page.waitForTimeout(500)
+        //   await that.page.waitForTimeout(100)
         //   notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
         //   if(notifWall){
         //     console.log('ada')
@@ -306,7 +308,7 @@ exports._closeWarning = async ({ that, response }) => {
 }
 
 exports._mengcovid = async ({ that }) => {
-  await that.page.waitForTimeout(500)
+  await that.page.waitForTimeout(100)
   let visible = false
   for(let el of await that.page.$x(`//button[contains(., "Iya")]`)){
     await that.page.evaluate(e => {
@@ -320,6 +322,6 @@ exports._mengcovid = async ({ that }) => {
     }
   }
 
-  await that.page.waitForTimeout(500)
+  await that.page.waitForTimeout(100)
   
 }

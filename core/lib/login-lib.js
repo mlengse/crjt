@@ -13,7 +13,7 @@ exports._loginCorJat = async ({ that }) => {
   
     let inpVal = await that.page.evaluate(() => document.getElementById('captcha-input').value)
     while(!inpVal || inpVal.length < 4){
-      await that.page.waitForTimeout(500)
+      await that.page.waitForTimeout(100)
       inpVal = await that.page.evaluate(() => document.getElementById('captcha-input').value)
     }
   

@@ -78,7 +78,7 @@ exports._jqSelect = async ({ that, sel, val, id }) => {
         }))
         // $(sel).val($(sel).find("option:contains('"+val+"')").val()).trigger('change')
       }, sel)
-      await that.page.waitForTimeout(500)
+      await that.page.waitForTimeout(100)
     }
     
     that.spinner.succeed(`val ${val} options: ${options.length /**map(e => e.text) */}`)
@@ -97,7 +97,7 @@ exports._jqSelect = async ({ that, sel, val, id }) => {
   
   }
 
-  await that.page.waitForTimeout(500)
+  await that.page.waitForTimeout(100)
 
 }
 
@@ -115,14 +115,14 @@ exports._typeAndSelect = async ({ that, selector, val }) => {
 
   await that.page.focus(selector)
   await that.page.click(selector)
-  await that.page.waitForTimeout(500)
+  await that.page.waitForTimeout(100)
 
   // await that.page.focus('input.select2-search__field')
   // await that.page.click('input.select2-search__field')
 
   // await that.find$AndClick({ $: 'input.select2-search__field'})
 
-  // await that.page.waitForTimeout(500)
+  // await that.page.waitForTimeout(100)
 
   let ada
 
@@ -163,20 +163,20 @@ exports._find$AndClick = async ({ that, $ }) => {
       }
     }
 
-    await that.page.waitForTimeout(500)
+    await that.page.waitForTimeout(100)
   
   }
-  await that.page.waitForTimeout(500)
+  await that.page.waitForTimeout(100)
 
 }
 
 exports._waitFor = async({ that, selector}) => {
   let el = await that.page.$(selector)
   while(!el){
-    await that.page.waitForTimeout(500)
+    await that.page.waitForTimeout(100)
     el = await that.page.$(selector)
   }
-  await that.page.waitForTimeout(500)
+  await that.page.waitForTimeout(100)
 
   that.spinner.succeed(`${selector} found`)
 
@@ -201,10 +201,10 @@ exports._findXPathAndClick = async ({ that, xpath }) => {
       }
     }
 
-    await that.page.waitForTimeout(500)
+    await that.page.waitForTimeout(100)
   
   }
-  await that.page.waitForTimeout(500)
+  await that.page.waitForTimeout(100)
 
 }
 
