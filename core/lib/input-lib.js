@@ -120,6 +120,19 @@ exports._inputCorJat = async ({ that }) => {
         sel: '#job',
         val: that.person.checkNIK && that.person.checkNIK['capil_job '] ? that.person.checkNIK['capil_job '] : 'tidak tahu'
       })
+
+      if(that.person.provinsi_domisili !== 'JAWA TENGAH'){
+        await Promise.all([
+          that.jqSelect({
+            sel: '#province_id',
+            val: that.person.provinsi_domisili
+          }),
+          // await that.page.waitForResponse(response => response.url().toLowerCase().includes('area?type=kab&id='))
+          that.page.waitForResponse(response => response.url().toLowerCase().includes('area?type=kab&id='))
+    
+        ])
+  
+      }
   
   
       // await that.jqSelect({
@@ -292,7 +305,9 @@ exports._inputCorJat = async ({ that }) => {
           !that.response && await Promise.all([
             that.clickBtn({ text: 'Simpan'}),
             that.mengcovid(),
-            that.page.waitForResponse(response => response.url().toLowerCase().includes('odp'), that.waitOpt)
+            that.page.waitForResponse(response => response.url().toLowerCase().includes('odp'), {
+              timeout:10000
+            })
           ])
 
           await that.page.waitForTimeout(1000)
@@ -318,7 +333,7 @@ exports._inputCorJat = async ({ that }) => {
   }catch(e){
     that.spinner.fail(`${new Date()} ${JSON.stringify(that.person)}`)
     that.spinner.fail(`${new Date()} ${JSON.stringify(e)}`)
-    if(JSON.stringify(e).includes('Timeout') || JSON.stringify(e).includes('reload')){
+    if(JSON.stringify(e).includes('TIMED') || JSON.stringify(e).includes('Timeout') || JSON.stringify(e).includes('reload')){
       // await that.page.reload()
       return await that.inputCorJat()
     }

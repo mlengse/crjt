@@ -231,6 +231,9 @@ exports._initBrowser = async ({ that }) => {
         that.response = `${response.url()} ${response.status()} ${response.statusText()}`
         that.spinner.fail(that.response)
         await that.closeWarning({response: that.response})
+        if(typeof that.response === 'String' && that.response.includes('500 Internal')){
+          throw new Error('reload')
+        }
         if(typeof that.response === 'String' && that.response.includes('Unprocessable')){
           throw new Error('reload')
           // await that.page.reload()
