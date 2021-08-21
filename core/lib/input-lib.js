@@ -1,15 +1,4 @@
-// const EventEmitter = require('events');
-// class MyEmitter extends EventEmitter {}
-
-// exports.myEmitter = new MyEmitter();
-
 exports._inputCorJat = async ({ that }) => {
-  
-  // that.myEmitter.on('reload', () => {
-  //   that.myEmitter.removeListener('reload', () => {})
-  //   throw new Error('need reload')
-  // })
-
   try{
     that.response = false
     // that.spinner.start(`input corjat ${person.nama}`)
@@ -38,17 +27,9 @@ exports._inputCorJat = async ({ that }) => {
 
     }
 
-    // let formTambah = await that.page.$('form#tambah')
-  
-    // if(!formTambah){
-    
-    // }
-  
     if(!that.person.checkNIK || (that.person.checkNIK && !that.person.checkNIK.error) || !that.person.checkDuplicate){
     
       await that.page.evaluate( nik => document.getElementById("nik").value = nik, that.person.nik)
-    
-      // await that.page.type('input#nik', person.nik)
     
       await Promise.all([
         that.page.waitForResponse(async response => {
@@ -66,8 +47,9 @@ exports._inputCorJat = async ({ that }) => {
     
     if((that.person.checkNIK && that.person.checkNIK.error) || (that.person.checkDuplicate)){
       // await that.upsertPerson({ person })
-      that.person.checkDuplicate && that.spinner.fail(`${that.person.checkDuplicate.error} ${that.person.checkDuplicate.message}`)
-      that.person.checkNIK.error && that.spinner.fail(`${that.person.checkNIK.error} ${that.person.checkNIK.message}`)
+      that.person.checkDuplicate && that.spinner.fail(`duplikasi ${that.person.checkDuplicate.error} ${that.person.checkDuplicate.message}`)
+      that.person.checkNIK.error && that.spinner.fail(`nik sudah ada ${that.person.checkNIK.error} ${that.person.checkNIK.message}`)
+      return
     } 
     if(!that.person.checkNIK || (that.person.checkNIK && !that.person.checkNIK.error)) {
       that.spinner.succeed(`input ${that.person.nama}`)
@@ -75,7 +57,7 @@ exports._inputCorJat = async ({ that }) => {
   
       notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
       if(notifWall){
-        that.spinner.succeed('aku opo kae')
+        // that.spinner.succeed('aku opo kae')
         await Promise.all([
           that.clickBtn({
             text: 'OK'
@@ -91,7 +73,7 @@ exports._inputCorJat = async ({ that }) => {
         val: that.person.nama
       })
   
-      !that.person.checkNIK.capil_tgl_lahir && await that.page.evaluate( tgl => {
+      !that.person.checkNIK.capil_tgl_lahir && that.person.tanggal_lahir && await that.page.evaluate( tgl => {
         $("#birth_date").val(tgl)
         let regexCalendar = "^(?:(?:31(-)(?:0?[13578]|1[02]))\\1|(?:(?:29|30)(-)(?:0?[1,3-9]|1[0-2])\\2))(?:(?:1[6-9]|[2-9]\\d)?\\d{2})$|^(?:29(-)(?:0?2)\\3(?:(?:(?:1[6-9]|[2-9]\\d)?(?:0[48]|[2468][048]|[13579][26])|(?:(?:16|[2468][048]|[3579][26])00))))$|^(?:0?[1-9]|1\\d|2[0-8])(-)(?:(?:0?[1-9])|(?:1[0-2]))\\4(?:(?:1[6-9]|[2-9]\\d)?\\d{2})$"
         const getAge = date => {
@@ -130,11 +112,7 @@ exports._inputCorJat = async ({ that }) => {
   
         }
         getAge(tgl)
-      }, that.convertFromAAR2CJ(that.person.tanggal_lahir))
-  
-      if(!that.person.no_telp_handphone || that.person.no_telp_handphone.split('').filter(e=>e !== '0').length < 5 ){
-        that.person.no_telp_handphone = that.config.PHONE
-      }
+      }, that.person.tanggal_lahir)
   
       await that.page.evaluate( tlp => document.getElementById("phone_number").value = tlp, that.person.no_telp_handphone)
   
@@ -146,10 +124,6 @@ exports._inputCorJat = async ({ that }) => {
         }
       })
   
-      // await that.typeAndSelect({
-      //   selector: 'span.select2-container[data-select2-id="2239"]',
-      //   val: that.person.checkNIK && that.person.checkNIK['capil_job '] ? that.person.checkNIK['capil_job '] : 'tidak tahu'
-      // })
       await that.jqSelect({
         sel: '#job',
         val: that.person.checkNIK && that.person.checkNIK['capil_job '] ? that.person.checkNIK['capil_job '] : 'tidak tahu'
@@ -168,11 +142,6 @@ exports._inputCorJat = async ({ that }) => {
   
       }
   
-  
-      // await that.jqSelect({
-      //   sel: '#province_id',
-      //   val: that.person.provinsi_domisili
-      // })
       await Promise.all([
         that.jqSelect({
           sel: '#district_id',
@@ -201,13 +170,19 @@ exports._inputCorJat = async ({ that }) => {
       if(!that.person.alamat_domisili){
         that.person.alamat_domisili = `alamat ${that.person.desa_kelurahan_domisili} ${that.person.rt}/${that.person.rw}`
       }
+      if(!that.person.alamat_ktp ){
+        that.person.alamat_ktp = that.person.alamat_domisili
+      }
+
+      // console.log(that.person.alamat_ktp)
   
+
       if(!that.person.checkNIK.capil_kec_id || !that.person.checkNIK.capil_prov_id || !that.person.checkNIK.capil_kel_id || !that.person.checkNIK.capil_kab_id){
         that.spinner.succeed(`ktp gak lengkap, isi ${that.person.provinsi_domisili}`)
         await Promise.all([
           that.jqSelect({
             sel: '#ktp_province_id',
-            val: that.person.provinsi_domisili
+            val: that.person.provinsi_domisili || 'JAWA TENGAH'
           }),
           // await that.page.type('#ktp_province_id', that.person.provinsi_domisili)
           that.page.waitForResponse(response => response.url().toLowerCase().includes('area?type=kab&id='))
@@ -238,7 +213,6 @@ exports._inputCorJat = async ({ that }) => {
           sel: '#ktp_village_id',
           val: that.person.desa_kelurahan_domisili || that.config.KEL
         }),
-        await that.page.evaluate( alamat => document.getElementById("ktp_address").value = alamat, that.person.alamat_domisili)
         that.spinner.succeed('ktp des done')
       }
   
@@ -261,9 +235,11 @@ exports._inputCorJat = async ({ that }) => {
         await that.page.evaluate( rt => document.getElementById("rt").value = rt, that.person.rt)
         await that.page.evaluate( rw => document.getElementById("rw").value = rw, that.person.rw)
         await that.page.evaluate( alamat => document.getElementById("address").value = alamat, that.person.alamat_domisili)
+        await that.page.evaluate( alamat => document.getElementById("ktp_address").value = alamat, that.person.alamat_ktp)
     
         await that.page.evaluate( () => document.getElementById("common_condition").value = 'baik')
         await that.page.evaluate( () => document.getElementById("treatment").value = 'isolasi')
+
         await that.page.$eval('#tgl_lapor', (e, tgl ) => $(e).val(tgl),  that.convertFromAAR2CJ(that.person.tanggal_pemeriksaan))
     
         // await that.find$AndClick({ $: })
@@ -302,11 +278,11 @@ exports._inputCorJat = async ({ that }) => {
           }
       
           await that.page.$eval('#test_date_rdt', (e, tgl ) => $(e).val(tgl),  that.convertFromAAR2CJ(that.person.tanggal_pemeriksaan))
-          if(that.person.status_pembiayaan.toLowerCase().includes('tidak')) {
+          // if(that.person.status_pembiayaan.toLowerCase().includes('tidak')) {
             await that.find$AndClick({ $: '#paymentTidakBerbayar'})
-          } else {
-            await that.find$AndClick({ $: '#paymentBerbayar'})
-          }
+          // } else {
+            // await that.find$AndClick({ $: '#paymentBerbayar'})
+          // }
       
           if(!that.person.nomor_spesimen) {
             that.person.nomor_spesimen = that.unixTime()
@@ -357,12 +333,13 @@ exports._inputCorJat = async ({ that }) => {
   
   }catch(e){
     that.spinner.fail(`${new Date()} ${e}`)
+    that.spinner.fail(`${new Date()} ${JSON.stringify(e)}`)
     if(`${e}`.includes('TypeError')){
+      console.log(e)
       that.spinner.fail(`${new Date()} ${JSON.stringify(that.person)}`)
       return
     }
-    that.spinner.fail(`${new Date()} ${JSON.stringify(e)}`)
-    if(JSON.stringify(e).includes('TIMED') || JSON.stringify(e).includes('Timeout') || JSON.stringify(e).includes('reload')){
+    if(`${e}`.includes('reload') || `${e}`.includes('ERR_')||JSON.stringify(e).includes('TIMED') || JSON.stringify(e).includes('Timeout') || JSON.stringify(e).includes('reload')){
       that.spinner.fail(`${new Date()} ${JSON.stringify(that.person)}`)
       // await that.page.reload()
       return await that.inputCorJat()

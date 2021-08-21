@@ -8,8 +8,10 @@ module.exports = async (isPM2) => {
   try{
     await app.init()
 
+    app.spinner.succeed(`total data after cleaning ${Object.keys(app.people).length}`)
+
     for(let [id, nik] of Object.entries(Object.keys(app.people)))
-    // if(id > 538 /*&& exclude.indexOf(id) === -1*/)
+    if(id > 605 /*&& exclude.indexOf(id) === -1*/)
     {
       app.person = await app.upsertPerson({ person: app.people[nik] })
       app.spinner.succeed(`-----------------------------------`)

@@ -227,56 +227,59 @@ exports._findXPathAndClick = async ({ that, xpath }) => {
 }
 
 exports._initBrowser = async ({ that }) => {
-  if(!that.Browser) {
-    that.Browser = await pptr.launch(that.config.pptrOpt)
-    that.pages = await that.Browser.pages()
-    that.page = that.pages[0]
 
-    that.page.on('requestfailed', async request => {
-      if(request.failure() && !JSON.stringify(request.failure()).includes('ABORT')) {
-        that.spinner.fail(`${request.url()} ${JSON.stringify(request.failure())}`)
-          throw new Error('reload')
-          // await that.page.reload()
-          // await that.inputCorJat()
-          // that.myEmitter.emit('reload')
-      }
-      // return
-    })
-
-    that.page.on('response', async response => {
-      that.response = ''
-      if(!response.ok()) {
-        that.response = `${response.url()} ${response.status()} ${response.statusText()}`
-        that.spinner.fail(that.response)
-        await that.closeWarning({response: that.response})
-        if(typeof that.response === 'String' && that.response.includes('500 Internal')){
-          throw new Error('reload')
+  try{
+    if(!that.Browser) {
+      that.Browser = await pptr.launch(that.config.pptrOpt)
+      that.pages = await that.Browser.pages()
+      that.page = that.pages[0]
+  
+      that.page.on('requestfailed', async request => {
+        if(request.failure() && !JSON.stringify(request.failure()).includes('ABORT')) {
+          that.spinner.fail(`${request.url()} ${JSON.stringify(request.failure())}`)
+            throw new Error('reload')
+            // await that.page.reload()
+            // await that.inputCorJat()
+            // that.myEmitter.emit('reload')
         }
-        if(typeof that.response === 'String' && that.response.includes('Unprocessable')){
-          throw new Error('reload')
-          // await that.page.reload()
-          // await that.inputCorJat()
-          // that.myEmitter.emit('reload')
-        }
-      }
-      if(response.request().resourceType() === 'xhr' && response.url().includes('dupl')){
-        if(response.headers()['content-type'].includes('json')) {
-          let resp = await response.json()
-          if(resp.error){
-            that.response = resp
-            await that.closeWarning({response: that.response})
+        // return
+      })
+  
+      that.page.on('response', async response => {
+        that.response = ''
+        if(!response.ok()) {
+          that.response = `${response.url()} ${response.status()} ${response.statusText()}`
+          that.spinner.fail(that.response)
+          await that.closeWarning({response: that.response})
+          if(typeof that.response === 'String' && that.response.includes('500 Internal')){
+            throw new Error('reload')
           }
-        } else if(response.headers()['content-type'].includes('html')) {
-          that.response = await response.text()
+          if(typeof that.response === 'String' && that.response.includes('Unprocessable')){
+            throw new Error('reload')
+            // await that.page.reload()
+            // await that.inputCorJat()
+            // that.myEmitter.emit('reload')
+          }
         }
-      }
-    })
-    
-    await that.page.goto(`${that.config.CORJAT_URL}`, that.waitOpt)
-    
+        if(response.request().resourceType() === 'xhr' && response.url().includes('dupl')){
+          if(response.headers()['content-type'].includes('json')) {
+            let resp = await response.json()
+            if(resp.error){
+              that.response = resp
+              await that.closeWarning({response: that.response})
+            }
+          } else if(response.headers()['content-type'].includes('html')) {
+            that.response = await response.text()
+          }
+        }
+      })
+      
+      await that.page.goto(`${that.config.CORJAT_URL}`, that.waitOpt)
+      
+    }
+  
+  }catch(e){
+    throw new Error('reload')
+
   }
-
-
-
-
 }

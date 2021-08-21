@@ -63,21 +63,33 @@ const getNewToken = async oAuth2Client => {
   })
 }
 
-exports._fetchSheet = async ( {that, sheetName}) => {
+exports._fetchSheet = async ( {that, sheetName, file}) => {
   return await new Promise ( (resolve, reject) => that.sheets.spreadsheets.values.get({
-    spreadsheetId: that.config.AAR_SHEET_ID,
+    spreadsheetId: file,
     range: sheetName,
   }, (err, res) => {
-    that.spinner.start('start listing')
+    that.spinner.start(`file ${file} sheet ${sheetName}`)
     if (err) reject('The API returned an error: ' + err);
     const rows = res.data.values;
     if (rows.length) {
       // Print columns A and E, which correspond to indices 0 and 4.
       let headers, headersID
       rows.map((row, id) => {
-        if(row[0] && row[0].toLowerCase() === 'nama') {
-          headers = row
-          headersID = id
+        for(let col of row){
+          if(col && col.toLowerCase()
+          .split('(').join(' ')
+          .split(')').join(' ')
+          .split('.').join(' ')
+          .split('/').join(' ')
+          .split('-').join(' ')
+          .split('*').join(' ')
+          .trim()
+          .split('  ').join(' ')
+          .split(' ').join('_') === 'nama') {
+            headers = row
+            headersID = id
+            break
+          }
         }
 
         let objRow = {}
@@ -86,6 +98,9 @@ exports._fetchSheet = async ( {that, sheetName}) => {
           // console.log(row[id][0])
           // if(row[id][0])
           row.map((col, id) => {
+            if(col){
+              col = col.trim()
+            }
             if(col && col.length && headers[id]){
               let headersName = headers[id].toLowerCase()
               .split('(').join(' ')
@@ -93,6 +108,7 @@ exports._fetchSheet = async ( {that, sheetName}) => {
               .split('.').join(' ')
               .split('/').join(' ')
               .split('-').join(' ')
+              .split('*').join(' ')
               .trim()
               .split('  ').join(' ')
               .split(' ').join('_')
@@ -100,16 +116,19 @@ exports._fetchSheet = async ( {that, sheetName}) => {
               objRow[headersName] = col
             }
           })
-          Object.keys(objRow).length > 2 ? rows[id] = objRow : null
+          Object.keys(objRow).length > 6 ? rows[id] = objRow : null
         }
 
       })
       
-      let filteredRows = rows.filter(row => !Array.isArray(row) && row.nik && row.nik.length === 17).map( row => Object.assign({}, row, {
-        nik: row.nik.split("'").join('')
-      }));
+      let filteredRows = rows.map( row => {
+        if(row.nik && row.nik.includes("'")){
+          row.nik = row.nik.split("'").join('')
+        }
+        return row
+      }).filter(row => !Array.isArray(row) && row.nik && row.nik.length === 16);
 
-      that.spinner.succeed(`data found ${sheetName}: ${filteredRows.length}`)
+      filteredRows.length && that.spinner.succeed(`data found file ${file} sheet ${sheetName}: ${filteredRows.length}`) 
       resolve(filteredRows)
 
     } else {
@@ -125,17 +144,29 @@ exports._fetchKasus =  async ({ that }) => {
 
   that.sheets = google.sheets({version: 'v4', auth});
 
-  const sheetsList = (await that.sheets.spreadsheets.get({ 
-    spreadsheetId: that.config.AAR_SHEET_ID
-  })).data.sheets.map((sheet) => {
-    return sheet.properties.title
-  })
-
   that.people = {}
 
-  if(sheetsList.length) for(sheetName of sheetsList) if(!sheetName.toLowerCase().includes('rekap')){
-    for ( let fetch of await that.fetchSheet({sheetName})) {
-      that.people[fetch.nik] = Object.assign({}, that.people[fetch.nik], fetch)
+  let files = []
+
+  that.config.AAR_SHEET_ID && files.push(that.config.AAR_SHEET_ID)
+  that.config.A_SHEET_ID && files.push(that.config.A_SHEET_ID)
+
+  for(let file of files) {
+    that.spinner.start(`process file id ${file}`)
+    let sheetsList = (await that.sheets.spreadsheets.get({ 
+      spreadsheetId: file
+    })).data.sheets.map((sheet) => {
+      return sheet.properties.title
+    })
+  
+    if(sheetsList.length) for(sheetName of sheetsList) if(!sheetName.toLowerCase().includes('rekap')){
+      for ( let fetch of await that.fetchSheet({sheetName, file})) {
+        that.people[fetch.nik] = Object.assign({}, that.people[fetch.nik], fetch)
+      }
     }
+  
   }
+
+  await that.cleanData()
+
 }
