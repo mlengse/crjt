@@ -214,11 +214,10 @@ exports._initBrowser = async ({ that }) => {
     that.pages = await that.Browser.pages()
     that.page = that.pages[0]
 
-    that.page.on('requestfailed', async request => {
+    that.page.on('requestfailed', request => {
       if(request.failure() && !JSON.stringify(request.failure()).includes('ABORT')) {
         that.spinner.fail(`${request.url()} ${JSON.stringify(request.failure())}`)
-        await that.page.reload()
-        await that.inputCorJat()
+        that.myEmitter.emit('reload')
       }
       // return
     })
@@ -230,8 +229,7 @@ exports._initBrowser = async ({ that }) => {
         that.spinner.fail(that.response)
         await that.closeWarning({response: that.response})
         if(typeof that.response === 'String' && that.response.includes('Unprocessable')){
-          await that.page.reload()
-          await that.inputCorJat()
+          that.myEmitter.emit('reload')
         }
       }
       if(response.request().resourceType() === 'xhr' && response.url().includes('dupl')){
