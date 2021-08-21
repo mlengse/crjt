@@ -65,12 +65,11 @@ exports._jqSelect = async ({ that, sel, val, id }) => {
     that.spinner.succeed('iki swab ag')
   } else {
     let options
+    await that.page.evaluate(e => {
+      document.querySelector(e).scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'end' });
+    }, sel);
 
     while(!options || options.length < 3){
-      await that.page.waitForTimeout(100)
-      await that.page.evaluate(e => {
-        document.querySelector(e).scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'end' });
-      }, sel);
 
       options = await that.page.evaluate( sel => {
         return $(sel).find('option').get().map( e => ({
@@ -79,6 +78,7 @@ exports._jqSelect = async ({ that, sel, val, id }) => {
         }))
         // $(sel).val($(sel).find("option:contains('"+val+"')").val()).trigger('change')
       }, sel)
+      await that.page.waitForTimeout(500)
     }
     
     that.spinner.succeed(`val ${val} options: ${options.length /**map(e => e.text) */}`)
@@ -214,7 +214,24 @@ exports._initBrowser = async ({ that }) => {
     that.pages = await that.Browser.pages()
     that.page = that.pages[0]
 
+    that.page.on('requestfailed', async request => {
+      if(request.failure() && !JSON.stringify(request.failure()).includes('ABORT')) {
+        that.spinner.fail(`${request.url()} ${JSON.stringify(request.failure())}`)
+        await that.page.reload()
+        await that.inputCorJat({ person: that.person })
+      }
+      // return
+    })
+
     that.page.on('response', async response => {
+      if(!response.ok()) {
+        that.response = `${response.url()} ${response.status()} ${response.statusText()}`
+        that.spinner.fail(that.response)
+        await that.closeWarning({response: that.response})
+        if(that.response.includes('Unprocessable')){
+          await that.inputCorjat({ person: that.person })
+        }
+      }
       if(response.request().resourceType() === 'xhr' && response.url().includes('dupl')){
         if(response.headers()['content-type'].includes('json')) {
           let resp = await response.json()
