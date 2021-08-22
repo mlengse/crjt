@@ -9,18 +9,13 @@ module.exports = async (isPM2) => {
     await app.init()
 
     app.spinner.succeed(`total data after cleaning ${Object.keys(app.people).length}`)
-    app.spinner.succeed(`total data positif setelah cleaning ${Object.keys(app.people).filter(nik => app.people[nik].hasil_pemeriksaan.toLowerCase().includes('tif') && app.people[nik].hasil_pemeriksaan.toLowerCase().includes('p')).length}`)
+    app.spinner.succeed(`total data positif setelah cleaning ${Object.keys(app.people).filter(nik => app.people[nik].isKonfirm).length}`)
 
     let sisa = Object.keys(app.people)
-    let pos = sisa.filter(e => app.people[e].hasil_pemeriksaan 
-      && app.people[e].hasil_pemeriksaan.toLowerCase().includes('tif') 
-      && app.people[e].hasil_pemeriksaan.toLowerCase().includes('p'))
+    let pos = sisa.filter(e => app.people[e].isKonfirm)
       .sort((b,a) => app.unixSrt(app.people[a].tanggal_pemeriksaan) - app.unixSrt(app.people[b].tanggal_pemeriksaan));
-    let neg = sisa.filter(e => !app.people[e].hasil_pemeriksaan 
-      || (app.people[e].hasil_pemeriksaan 
-        && app.people[e].hasil_pemeriksaan.toLowerCase().includes('tif') 
-        && !app.people[e].hasil_pemeriksaan.toLowerCase().includes('p')))
-        .sort((b,a) => app.unixSrt(app.people[a].tanggal_pemeriksaan) - app.unixSrt(app.people[b].tanggal_pemeriksaan));
+    let neg = sisa.filter(e => !app.people[e].isKonfirm)
+      .sort((b,a) => app.unixSrt(app.people[a].tanggal_pemeriksaan) - app.unixSrt(app.people[b].tanggal_pemeriksaan));
     sisa = [...pos, ...neg]
     let sl = sisa.length
     let nik
@@ -34,14 +29,21 @@ module.exports = async (isPM2) => {
         app.person = await app.upsertPerson({ person: app.people[nik] })
         // app.person = app.people[nik]
         app.spinner.succeed(`-----------------------------------`)
-        app.spinner.succeed(`processing ${id}, ${nik} ${app.person.nama} ${app.person.hasil_pemeriksaan}`)
+        app.spinner.succeed(`processing ${id}, ${nik} ${app.person.nama} ${app.person.isKonfirm ? 'terkonfirmasi' : ''}. Hasil ag: ${app.person.hasil_pemeriksaan}`)
         app.spinner.succeed(`sisa data after cleaning ${sisa.length}`)
 
-        if(app.person.hasil_pemeriksaan.toLowerCase().includes('tif') && app.person.hasil_pemeriksaan.toLowerCase().includes('p')){
-          app.spinner.succeed(`sisa data positif setelah cleaning ${sisa.filter(nik => app.people[nik].hasil_pemeriksaan.toLowerCase().includes('tif') && app.people[nik].hasil_pemeriksaan.toLowerCase().includes('p')).length}`)
+        if(app.person.isKonfirm){
+          app.spinner.succeed(`sisa data positif setelah cleaning ${sisa.filter(nik => app.people[nik].isKonfirm).length}`)
         }
-        await app.inputCorJat()
-        await app.upsertPerson({ person: app.person })
+        if(!((app.person.checkNIK && app.person.checkNIK.error) || app.person.checkDuplicate)){
+          await app.inputCorJat()
+          await app.upsertPerson({ person: app.person })
+        }
+        if((app.person.checkNIK && app.person.checkNIK.error) || app.person.checkDuplicate){
+          app.person.checkDuplicate && app.handleDuplicate()
+          app.person.checkNIK.error && app.handleNIK()
+        } 
+    
       }
     }
 

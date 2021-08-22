@@ -377,7 +377,7 @@ exports._closeWarning = async ({ that, response }) => {
     that.person.checkDuplicate = response
   }
 
-  // await that.page.waitForTimeout(1000)
+  await that.page.waitForTimeout(1000)
 
   let notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
   if(notifWall){
