@@ -384,6 +384,18 @@ exports._closeWarning = async ({ that, response }) => {
 exports._mengcovid = async ({ that }) => {
   await that.page.waitForTimeout(100)
   let visible = false
+  for(let el of await that.page.$x(`//button[contains(., "Ya")]`)){
+    await that.page.evaluate(e => {
+      e.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'end' });
+    }, el);
+    visible = await that.isVisible({ el })
+    if(visible){
+      // await el.focus()
+      await el.evaluate( el => el.click())
+      that.spinner.succeed(`${that.person.nama} ODP ${that.person.hasil_pemeriksaan} ${that.person.tanggal_pemeriksaan}`)
+      break
+    }
+  }
   for(let el of await that.page.$x(`//button[contains(., "Iya")]`)){
     await that.page.evaluate(e => {
       e.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'end' });
