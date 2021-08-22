@@ -104,6 +104,6 @@ dist
 
 credentials.json
 token.json
-tmp
+tmp*
 db/*
 !db/db.json
