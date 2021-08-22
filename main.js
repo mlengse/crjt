@@ -35,9 +35,9 @@ module.exports = async (isPM2) => {
         // app.person = app.people[nik]
         app.spinner.succeed(`-----------------------------------`)
         app.spinner.succeed(`processing ${id}, ${nik} ${app.person.nama} ${app.person.hasil_pemeriksaan}`)
+        app.spinner.succeed(`sisa data after cleaning ${sisa.length}`)
 
         if(app.person.hasil_pemeriksaan.toLowerCase().includes('tif') && app.person.hasil_pemeriksaan.toLowerCase().includes('p')){
-          app.spinner.succeed(`sisa data after cleaning ${sisa.length}`)
           app.spinner.succeed(`sisa data positif setelah cleaning ${sisa.filter(nik => app.people[nik].hasil_pemeriksaan.toLowerCase().includes('tif') && app.people[nik].hasil_pemeriksaan.toLowerCase().includes('p')).length}`)
         }
         await app.inputCorJat()
