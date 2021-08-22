@@ -29,7 +29,7 @@ module.exports = async (isPM2) => {
     while(sl !== sl - sisa.length){
       id = sl - sisa.length
       nik = sisa.shift()
-      if( id >= 1070 /* && exclude.indexOf(id) === -1*/)
+      if( id >= 1828 /* && exclude.indexOf(id) === -1*/)
       {
         app.person = await app.upsertPerson({ person: app.people[nik] })
         // app.person = app.people[nik]
