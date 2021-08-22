@@ -7,28 +7,28 @@ exports._inputCorJat = async ({ that }) => {
     // that.spinner.start(`${JSON.stringify(that.person)}`)
     that.spinner.start(`input corjat ${that.person.nik} ${that.person.nama}`)
     let notifWall
+
+    if((!that.person.checkNIK || (that.person.checkNIK && !that.person.checkNIK.error)) && !that.person.checkDuplicate){
+    
+      await that.loginCorJat()
+
+      let inputNIK = await that.page.$('input#nik')
+      if(!inputNIK){
+        notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
+        if(notifWall){
+          await that.clickBtn({
+            text: 'OK'
+          })
+        }
+      
+        await that.clickBtn({ text: 'Tambah Kasus'})
+      
+        await that.findXPathAndClick({ xpath: '//a[contains(., "WNI")]'})
+      
+        await that.waitFor({ selector: 'input#nik'})
   
-    await that.loginCorJat()
-
-    let inputNIK = await that.page.$('input#nik')
-    if(!inputNIK){
-      notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
-      if(notifWall){
-        await that.clickBtn({
-          text: 'OK'
-        })
       }
-    
-      await that.clickBtn({ text: 'Tambah Kasus'})
-    
-      await that.findXPathAndClick({ xpath: '//a[contains(., "WNI")]'})
-    
-      await that.waitFor({ selector: 'input#nik'})
-
-    }
-
-    if(!that.person.checkNIK || (that.person.checkNIK && !that.person.checkNIK.error) || !that.person.checkDuplicate){
-    
+  
       await that.page.evaluate( nik => document.getElementById("nik").value = nik, that.person.nik)
     
       await Promise.all([
@@ -51,6 +51,7 @@ exports._inputCorJat = async ({ that }) => {
       that.person.checkNIK.error && that.spinner.fail(`nik sudah ada ${that.person.checkNIK.error} ${that.person.checkNIK.message}`)
       return
     } 
+
     if(!that.person.checkNIK || (that.person.checkNIK && !that.person.checkNIK.error)) {
       that.spinner.succeed(`input ${that.person.nama}`)
   
@@ -243,22 +244,37 @@ exports._inputCorJat = async ({ that }) => {
         await that.page.$eval('#tgl_lapor', (e, tgl ) => $(e).val(tgl),  that.person.tanggal_pemeriksaan)
     
         // await that.find$AndClick({ $: })
-    
+
+        await Promise.all([
+          that.jqSelect({
+            sel: '#status_id',
+            val: that.person.hasil_pemeriksaan === 'POSITIF' ? 'terkonfirmasi' : that.person.tujuan_pemeriksaan && that.person.tujuan_pemeriksaan.toLowerCase().includes('ning') ? 'screening' : that.person.tujuan_pemeriksaan && that.person.tujuan_pemeriksaan.toLowerCase().includes('spe') ? 'Suspe' : 'kontak'
+          }),
+          that.page.waitForResponse( response => response.ok() && response.url().includes('test-type') )
+        ])
+
+        await that.page.waitForTimeout(100)
+
+        if(that.person.checkDuplicate){
+          return
+        }
+
         await that.jqSelect({
-          sel: '#status_id',
-          val: that.person.hasil_pemeriksaan === 'POSITIF' ? 'terkonfirmasi' : that.person.tujuan_pemeriksaan && that.person.tujuan_pemeriksaan.toLowerCase().includes('ning') ? 'screening' : that.person.tujuan_pemeriksaan && that.person.tujuan_pemeriksaan.toLowerCase().includes('spe') ? 'Suspe' : 'kontak'
+          sel: '#swab_type',
+          id: '2'
         })
 
-        let resP = await that.page.$('#resultPositif')
-        while(!resP){
-          await that.page.waitForTimeout(100)
-          resP = await that.page.$('#resultPositif')
-          await that.waitFor({ selector: 'select#swab_type'})
+        // let resP = await that.page.$('#resultPositif')
+        // while(!resP){
+        //   await that.page.waitForTimeout(100)
+        //   // await that.page.waitForTimeout(100)
+        //   // await that.waitFor({ selector: 'select#swab_type'})
     
-          await that.page.select('select#swab_type', '2')
-          // await that.page.waitForTimeout(100)
+        //   await that.page.select('select#swab_type', '2')
+        //   // await that.page.waitForTimeout(100)
+        //   resP = await that.page.$('#resultPositif')
       
-        }
+        // }
     
         if(that.person.hasil_pemeriksaan === 'POSITIF') {
           await that.find$AndClick({ $: '#resultPositif'})
@@ -340,7 +356,7 @@ exports._inputCorJat = async ({ that }) => {
     }
     if(`${e}`.includes('reload') || `${e}`.includes('ERR_')||JSON.stringify(e).includes('TIMED') || JSON.stringify(e).includes('Timeout') || JSON.stringify(e).includes('reload')){
       // that.spinner.fail(`${new Date()} ${JSON.stringify(that.person)}`)
-      // await that.page.reload()
+      await that.page.reload()
       return await that.inputCorJat()
     }
   }

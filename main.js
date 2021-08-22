@@ -12,16 +12,24 @@ module.exports = async (isPM2) => {
     app.spinner.succeed(`total data positif setelah cleaning ${Object.keys(app.people).filter(nik => app.people[nik].hasil_pemeriksaan.toLowerCase().includes('tif') && app.people[nik].hasil_pemeriksaan.toLowerCase().includes('p')).length}`)
 
     let sisa = Object.keys(app.people)
-    let pos = sisa.filter(e => app.people[e].hasil_pemeriksaan && app.people[e].hasil_pemeriksaan.toLowerCase().includes('tif') && app.people[e].hasil_pemeriksaan.toLowerCase().includes('p'))
-    let neg = sisa.filter(e => !app.people[e].hasil_pemeriksaan || (app.people[e].hasil_pemeriksaan && app.people[e].hasil_pemeriksaan.toLowerCase().includes('tif') && !app.people[e].hasil_pemeriksaan.toLowerCase().includes('p')))
+    let pos = sisa.filter(e => app.people[e].hasil_pemeriksaan 
+      && app.people[e].hasil_pemeriksaan.toLowerCase().includes('tif') 
+      && app.people[e].hasil_pemeriksaan.toLowerCase().includes('p'))
+      .sort((b,a) => app.unixSrt(app.people[a].tanggal_pemeriksaan) - app.unixSrt(app.people[b].tanggal_pemeriksaan));
+    let neg = sisa.filter(e => !app.people[e].hasil_pemeriksaan 
+      || (app.people[e].hasil_pemeriksaan 
+        && app.people[e].hasil_pemeriksaan.toLowerCase().includes('tif') 
+        && !app.people[e].hasil_pemeriksaan.toLowerCase().includes('p')))
+        .sort((b,a) => app.unixSrt(app.people[a].tanggal_pemeriksaan) - app.unixSrt(app.people[b].tanggal_pemeriksaan));
     sisa = [...pos, ...neg]
     let sl = sisa.length
     let nik
     let id
+    
     while(sl !== sl - sisa.length){
       id = sl - sisa.length
       nik = sisa.shift()
-      // if(id >= 1346 /*&& exclude.indexOf(id) === -1*/)
+      if(id >= 732 /*&& exclude.indexOf(id) === -1*/)
       {
         app.person = await app.upsertPerson({ person: app.people[nik] })
         // app.person = app.people[nik]

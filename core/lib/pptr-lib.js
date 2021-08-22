@@ -68,7 +68,8 @@ exports._selectChoice =  async ({ that, val, choice }) => {
 exports._jqSelect = async ({ that, sel, val, id }) => {
   if(id){
     await that.page.evaluate(( sel, id ) => $(sel).val(id).change(), sel, id)
-    that.spinner.succeed('iki swab ag')
+    await that.page.select(`select${sel}`, id)
+    that.spinner.succeed(`selector ${sel} val ${id}`)
   } else {
     let options
     await that.page.evaluate(e => {
