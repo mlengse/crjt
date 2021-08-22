@@ -260,10 +260,10 @@ exports._initBrowser = async ({ that }) => {
             throw new Error('reload')
           }
         }
-        if(response.request().resourceType() === 'xhr' && response.url().includes('dupl')){
+        if(response.request().resourceType() === 'xhr' ){
           if(response.headers()['content-type'].includes('json')) {
             let resp = await response.json()
-            if(resp.error){
+            if(resp.error &&  response.url().includes('dupl')){
               that.response = resp
               await that.closeWarning({response: that.response})
             }

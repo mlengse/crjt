@@ -38,6 +38,7 @@ exports.fixTgl = tgl => {
     } else if (tgl.includes(' ')){
       tgl = moment(tgl, 'D MMMM YYYY').format('DD-MM-YYYY')
     } else {
+      tgl = 'Invalid date'
       console.log(`belum c ${tgl}`)
     }
   }

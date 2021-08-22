@@ -11,7 +11,7 @@ exports._fixTglLahir = async ({that, person}) => {
     }
     delete person.tanggal_lahir
   }
-  if(!person.tanggal_lahir && person.umur_th && (person.umur_th.trim()).length > 0 ){
+  if(!person.tanggal_lahir && person.umur_th && (person.umur_th.trim()).length > 4){
     person.tanggal_lahir = that.fixTgl(person.umur_th)
   }
   if(!person.tanggal_lahir){

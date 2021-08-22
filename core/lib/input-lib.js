@@ -349,13 +349,20 @@ exports._inputCorJat = async ({ that }) => {
     that.spinner.fail(`${new Date()} ${JSON.stringify(e)}`)
     if(
       `${e}`.includes('TypeError')
-      || `${e}`.includes('failed to find element')
     ){
       console.error(e)
       return
     }
-    if(`${e}`.includes('reload') || `${e}`.includes('ERR_')||JSON.stringify(e).includes('TIMED') || JSON.stringify(e).includes('Timeout') || JSON.stringify(e).includes('reload')){
+    if(
+      `${e}`.includes('reload') 
+      || `${e}`.includes('failed to find element')
+      || `${e}`.includes('ERR_')
+      ||JSON.stringify(e).includes('TIMED') 
+      || JSON.stringify(e).includes('Timeout') 
+      || JSON.stringify(e).includes('reload')
+    ){
       // that.spinner.fail(`${new Date()} ${JSON.stringify(that.person)}`)
+      console.error(e)
       await that.page.reload()
       return await that.inputCorJat()
     }
@@ -367,10 +374,10 @@ exports._closeWarning = async ({ that, response }) => {
   response.error && that.spinner.fail(`${response.error} ${response.message}`)
   if(response.error === 'Duplicate') {
     that.spinner.succeed('duplikasi')
-    that.person.checkDuplicate = true
+    that.person.checkDuplicate = response
   }
 
-  await that.page.waitForTimeout(1000)
+  // await that.page.waitForTimeout(1000)
 
   let notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
   if(notifWall){
