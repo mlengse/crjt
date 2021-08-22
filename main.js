@@ -20,6 +20,7 @@ module.exports = async (isPM2) => {
     let sl = sisa.length
     let nik
     let id
+    // console.log(JSON.stringify(pos.map( e => app.people[e].hasil_pemeriksaan)))
     
     while(sl !== sl - sisa.length){
       id = sl - sisa.length
@@ -29,7 +30,7 @@ module.exports = async (isPM2) => {
         app.person = await app.upsertPerson({ person: app.people[nik] })
         // app.person = app.people[nik]
         app.spinner.succeed(`-----------------------------------`)
-        app.spinner.succeed(`processing ${id}, ${nik} ${app.person.nama} ${app.person.isKonfirm ? 'terkonfirmasi' : ''}. Hasil ag: ${app.person.hasil_pemeriksaan}`)
+        app.spinner.succeed(`processing ${id}, ${nik} ${app.person.nama}${app.person.isKonfirm ? ' terkonfirmasi.' : '.'} tgl ag ${app.person.tanggal_pemeriksaan} Hasil: ${app.person.hasil_pemeriksaan}`)
         app.spinner.succeed(`sisa data after cleaning ${sisa.length}`)
 
         if(app.person.isKonfirm){

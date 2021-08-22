@@ -132,18 +132,19 @@ exports._cleanData = async ({ that }) => {
         }
       })
 
-      if(person.hasil_pemeriksaan 
-        && person.hasil_pemeriksaan.toLowerCase().includes('tif') 
-        && person.hasil_pemeriksaan.toLowerCase().includes('p'))
-        {
-          person.isKonfirm = true
-        }
+    }
 
-      if(that.people[nik]){
-        that.people[nik] = person
+    // console.log(person.hasil_pemeriksaan)
+    if(person.hasil_pemeriksaan 
+      && person.hasil_pemeriksaan.toLowerCase().includes('tif') 
+      && person.hasil_pemeriksaan.toLowerCase().includes('p'))
+      {
+        person.isKonfirm = true
       }
 
-    }
+    // if(that.people[nik]){
+    that.people[nik] = person
+    // }
 
 
     

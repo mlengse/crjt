@@ -47,8 +47,8 @@ exports._inputCorJat = async ({ that }) => {
     
     if((that.person.checkNIK && that.person.checkNIK.error) || (that.person.checkDuplicate)){
       // await that.upsertPerson({ person })
-      that.person.checkDuplicate && that.spinner.fail(`duplikasi ${that.person.checkDuplicate.error} ${that.person.checkDuplicate.message}`)
-      that.person.checkNIK.error && that.spinner.fail(`nik sudah ada ${that.person.checkNIK.error} ${that.person.checkNIK.message}`)
+      // that.person.checkDuplicate && that.spinner.fail(`duplikasi ${that.person.checkDuplicate.error} ${that.person.checkDuplicate.message}`)
+      // that.person.checkNIK.error && that.spinner.fail(`nik sudah ada ${that.person.checkNIK.error} ${that.person.checkNIK.message}`)
       return
     } 
 

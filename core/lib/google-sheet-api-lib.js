@@ -125,6 +125,8 @@ exports._fetchSheet = async ( {that, sheetName, file}) => {
         if(row.nik){
           row.nik = row.nik.split('O').join('0')
           row.nik = row.nik.replace(/[^0-9\.]+/g, '')
+        } else if(row.nama){
+          console.log(row)
         }
         return row
       }).filter(row => !Array.isArray(row) && row.nik && row.nik.length === 16);
