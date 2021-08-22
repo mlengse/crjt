@@ -11,15 +11,30 @@ module.exports = async (isPM2) => {
     app.spinner.succeed(`total data after cleaning ${Object.keys(app.people).length}`)
     app.spinner.succeed(`total data positif setelah cleaning ${Object.keys(app.people).filter(nik => app.people[nik].hasil_pemeriksaan.toLowerCase().includes('tif') && app.people[nik].hasil_pemeriksaan.toLowerCase().includes('p')).length}`)
 
-    for(let [id, nik] of Object.entries(Object.keys(app.people)))
-    if(id >= 704 /*&& exclude.indexOf(id) === -1*/)
-    {
-      app.person = await app.upsertPerson({ person: app.people[nik] })
-      app.spinner.succeed(`-----------------------------------`)
-      // console.log(app.person)
-      app.spinner.succeed(`processing ${id}, ${nik} ${app.person.nama}`)
-      await app.inputCorJat()
-      await app.upsertPerson({ person: app.person })
+    let sisa = Object.keys(app.people)
+    let pos = sisa.filter(e => app.people[e].hasil_pemeriksaan && app.people[e].hasil_pemeriksaan.toLowerCase().includes('tif') && app.people[e].hasil_pemeriksaan.toLowerCase().includes('p'))
+    let neg = sisa.filter(e => !app.people[e].hasil_pemeriksaan || (app.people[e].hasil_pemeriksaan && app.people[e].hasil_pemeriksaan.toLowerCase().includes('tif') && !app.people[e].hasil_pemeriksaan.toLowerCase().includes('p')))
+    sisa = [...pos, ...neg]
+    let sl = sisa.length
+    let nik
+    let id
+    while(sl !== sl - sisa.length){
+      id = sl - sisa.length
+      nik = sisa.shift()
+      // if(id >= 1346 /*&& exclude.indexOf(id) === -1*/)
+      {
+        app.person = await app.upsertPerson({ person: app.people[nik] })
+        // app.person = app.people[nik]
+        app.spinner.succeed(`-----------------------------------`)
+        app.spinner.succeed(`processing ${id}, ${nik} ${app.person.nama} ${app.person.hasil_pemeriksaan}`)
+
+        if(app.person.hasil_pemeriksaan.toLowerCase().includes('tif') && app.person.hasil_pemeriksaan.toLowerCase().includes('p')){
+          app.spinner.succeed(`sisa data after cleaning ${sisa.length}`)
+          app.spinner.succeed(`sisa data positif setelah cleaning ${sisa.filter(nik => app.people[nik].hasil_pemeriksaan.toLowerCase().includes('tif') && app.people[nik].hasil_pemeriksaan.toLowerCase().includes('p')).length}`)
+        }
+        await app.inputCorJat()
+        await app.upsertPerson({ person: app.person })
+      }
     }
 
     await app.close(isPM2)

@@ -62,7 +62,7 @@ exports._selectChoice =  async ({ that, val, choice }) => {
 
   // }
 
-  await that.page.$eval( choice[val], e => $(e).prop('checked', true))
+  await that.page.$eval( choice[val.toUpperCase()], e => $(e).prop('checked', true))
 }
 
 exports._jqSelect = async ({ that, sel, val, id }) => {
@@ -235,14 +235,15 @@ exports._initBrowser = async ({ that }) => {
       that.page = that.pages[0]
   
       that.page.on('requestfailed', async request => {
-        if(request.failure() && !JSON.stringify(request.failure()).includes('ABORT')) {
+        if(request.failure() 
+        && (
+          !JSON.stringify(request.failure()).includes('ABORT')
+          || !JSON.stringify(request.failure()).includes('ERR_EMPTY')
+          
+        )) {
           that.spinner.fail(`${request.url()} ${JSON.stringify(request.failure())}`)
-            throw new Error('reload')
-            // await that.page.reload()
-            // await that.inputCorJat()
-            // that.myEmitter.emit('reload')
+          throw new Error('reload')
         }
-        // return
       })
   
       that.page.on('response', async response => {
@@ -256,9 +257,6 @@ exports._initBrowser = async ({ that }) => {
           }
           if(typeof that.response === 'String' && that.response.includes('Unprocessable')){
             throw new Error('reload')
-            // await that.page.reload()
-            // await that.inputCorJat()
-            // that.myEmitter.emit('reload')
           }
         }
         if(response.request().resourceType() === 'xhr' && response.url().includes('dupl')){

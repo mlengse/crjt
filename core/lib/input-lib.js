@@ -117,7 +117,7 @@ exports._inputCorJat = async ({ that }) => {
       await that.page.evaluate( tlp => document.getElementById("phone_number").value = tlp, that.person.no_telp_handphone)
   
       !that.person.checkNIK.capil_sex && await that.selectChoice({
-        val: that.person.jenis_kelamin || that.person.checkNIK.capil_sex || 'L',
+        val: that.person.jenis_kelamin ? that.person.jenis_kelamin : 'L',
         choice: {
           L: "#sexL",
           P: "#sexP"
@@ -246,13 +246,19 @@ exports._inputCorJat = async ({ that }) => {
     
         await that.jqSelect({
           sel: '#status_id',
-          val: that.person.hasil_pemeriksaan === 'POSITIF' ? 'terkonfirmasi' : that.person.tujuan_pemeriksaan.toLowerCase().includes('ning') ? 'screening' : that.person.tujuan_pemeriksaan && that.person.tujuan_pemeriksaan.toLowerCase().includes('spe') ? 'Suspe' : 'kontak'
+          val: that.person.hasil_pemeriksaan === 'POSITIF' ? 'terkonfirmasi' : that.person.tujuan_pemeriksaan && that.person.tujuan_pemeriksaan.toLowerCase().includes('ning') ? 'screening' : that.person.tujuan_pemeriksaan && that.person.tujuan_pemeriksaan.toLowerCase().includes('spe') ? 'Suspe' : 'kontak'
         })
+
+        let resP = await that.page.$('#resultPositif')
+        while(!resP){
+          await that.page.waitForTimeout(100)
+          resP = await that.page.$('#resultPositif')
+          await that.waitFor({ selector: 'select#swab_type'})
     
-        await that.waitFor({ selector: 'select#swab_type'})
-    
-        await that.page.select('select#swab_type', '2')
-        // await that.page.waitForTimeout(100)
+          await that.page.select('select#swab_type', '2')
+          // await that.page.waitForTimeout(100)
+      
+        }
     
         if(that.person.hasil_pemeriksaan === 'POSITIF') {
           await that.find$AndClick({ $: '#resultPositif'})
@@ -292,7 +298,7 @@ exports._inputCorJat = async ({ that }) => {
       
           await that.jqSelect({
             sel: '#purpose-rdt',
-            val: that.person.tujuan_pemeriksaan && that.person.tujuan_pemeriksaan.toLowerCase().includes('ning') ? 'Alasan lain' : that.person.tujuan_pemeriksaan.toLowerCase().includes('spe') ? 'Suspe' : 'kontak'
+            val: that.person.tujuan_pemeriksaan && that.person.tujuan_pemeriksaan.toLowerCase().includes('ning') ? 'Alasan lain' : that.person.tujuan_pemeriksaan && that.person.tujuan_pemeriksaan.toLowerCase().includes('spe') ? 'Suspe' : 'kontak'
           })
       
           await that.page.evaluate( () => document.getElementById("swab_period_rdt").value = "")
@@ -310,18 +316,9 @@ exports._inputCorJat = async ({ that }) => {
             ])
   
             await that.page.waitForTimeout(1000)
-        
-        
-    
           }
-    
-  
         }
-  
       }
-  
-  
-  
     }
     notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
     if(notifWall){
@@ -329,14 +326,16 @@ exports._inputCorJat = async ({ that }) => {
         text: 'OK'
       })
     }
-
     // that.person = await that.upsertPerson({ person })
-  
   }catch(e){
+    console.log(that.person)
     that.spinner.fail(`${new Date()} ${e}`)
     that.spinner.fail(`${new Date()} ${JSON.stringify(e)}`)
-    console.log(that.person)
-    if(`${e}`.includes('TypeError')){
+    if(
+      `${e}`.includes('TypeError')
+      || `${e}`.includes('failed to find element')
+    ){
+      console.error(e)
       return
     }
     if(`${e}`.includes('reload') || `${e}`.includes('ERR_')||JSON.stringify(e).includes('TIMED') || JSON.stringify(e).includes('Timeout') || JSON.stringify(e).includes('reload')){
@@ -377,10 +376,10 @@ exports._mengcovid = async ({ that }) => {
     if(visible){
       // await el.focus()
       await el.evaluate( el => el.click())
+      that.spinner.succeed(`${that.person.nama} POSITIF ${that.person.tanggal_pemeriksaan}`)
       break
     }
   }
 
   await that.page.waitForTimeout(100)
-  that.spinner.succeed(`${that.person.nama} POSITIF ${that.person.tanggal_pemeriksaan}`)
 }
