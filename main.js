@@ -29,7 +29,7 @@ module.exports = async (isPM2) => {
     while(sl !== sl - sisa.length){
       id = sl - sisa.length
       nik = sisa.shift()
-      if( id >= 681 /* && exclude.indexOf(id) === -1*/)
+      // if( id >= 681 /* && exclude.indexOf(id) === -1*/)
       {
         app.person = await app.upsertPerson({ person: app.people[nik] })
         // app.person = app.people[nik]
@@ -40,8 +40,8 @@ module.exports = async (isPM2) => {
         if(app.person.hasil_pemeriksaan.toLowerCase().includes('tif') && app.person.hasil_pemeriksaan.toLowerCase().includes('p')){
           app.spinner.succeed(`sisa data positif setelah cleaning ${sisa.filter(nik => app.people[nik].hasil_pemeriksaan.toLowerCase().includes('tif') && app.people[nik].hasil_pemeriksaan.toLowerCase().includes('p')).length}`)
         }
-        // await app.inputCorJat()
-        // await app.upsertPerson({ person: app.person })
+        await app.inputCorJat()
+        await app.upsertPerson({ person: app.person })
       }
     }
 

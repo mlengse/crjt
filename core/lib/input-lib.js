@@ -7,10 +7,10 @@ exports._inputCorJat = async ({ that }) => {
     // that.spinner.start(`${JSON.stringify(that.person)}`)
     that.spinner.start(`input corjat ${that.person.nik} ${that.person.nama}`)
     let notifWall
+    await that.loginCorJat()
 
     if((!that.person.checkNIK || (that.person.checkNIK && !that.person.checkNIK.error)) && !that.person.checkDuplicate){
     
-      await that.loginCorJat()
 
       let inputNIK = await that.page.$('input#nik')
       if(!inputNIK){
