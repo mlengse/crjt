@@ -122,8 +122,8 @@ exports._fetchSheet = async ( {that, sheetName, file}) => {
       })
       
       let filteredRows = rows.map( row => {
-        if(row.nik && row.nik.includes("'")){
-          row.nik = row.nik.split("'").join('')
+        if(row.nik){
+          row.nik = row.nik.replace(/[^0-9\.]+/g, '')
         }
         return row
       }).filter(row => !Array.isArray(row) && row.nik && row.nik.length === 16);
