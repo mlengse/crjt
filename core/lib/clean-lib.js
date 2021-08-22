@@ -90,7 +90,7 @@ exports._cleanData = async ({ that }) => {
 
     let tgl = that.fixTgl(person.tanggal_pemeriksaan)
     if(tgl.includes('date')){
-      console.log(person.tanggal_pemeriksaan.length, person.tanggal_pemeriksaan)
+      console.log('tgl periksa', person.tanggal_pemeriksaan.length, person.tanggal_pemeriksaan)
       console.log(person)
     }
 
