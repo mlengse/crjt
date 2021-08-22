@@ -230,11 +230,14 @@ exports._findXPathAndClick = async ({ that, xpath }) => {
 exports._initBrowser = async ({ that }) => {
 
   try{
-    if(!that.Browser) {
-      that.Browser = await pptr.launch(that.config.pptrOpt)
+    if(!that.page){
+      if(!that.Browser) {
+        that.Browser = await pptr.launch(that.config.pptrOpt)
+      }
       that.pages = await that.Browser.pages()
       that.page = that.pages[0]
-  
+    }
+    if(that.page){
       that.page.on('requestfailed', async request => {
         if(request.failure() 
         && (
@@ -246,7 +249,6 @@ exports._initBrowser = async ({ that }) => {
           throw new Error('reload')
         }
       })
-  
       that.page.on('response', async response => {
         that.response = ''
         if(!response.ok()) {
@@ -274,9 +276,7 @@ exports._initBrowser = async ({ that }) => {
       })
       
       await that.page.goto(`${that.config.CORJAT_URL}`, that.waitOpt)
-      
     }
-  
   }catch(e){
     throw new Error('reload')
 

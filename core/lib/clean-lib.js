@@ -9,7 +9,7 @@ exports._cleanData = async ({ that }) => {
     if(!person.no_telp_handphone || person.no_telp_handphone.split('').filter(e=>e !== '0').length < 5 ){
       person.no_telp_handphone = that.config.PHONE
     }
-    person.no_telp_handphone = person.no_telp_handphone.replace(/[^0-9\.]+/g, '');
+    person.no_telp_handphone = person.no_telp_handphone.split('O').join('0').replace(/[^0-9\.]+/g, '');
     // person.no_telp_handphone !== that.config.PHONE && console.log(person.no_telp_handphone)
 
     if(!person.jenis_kelamin && person.jenis_kelamin__l_p){
