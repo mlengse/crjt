@@ -127,7 +127,7 @@ exports._inputCorJat = async ({ that }) => {
   
       await that.jqSelect({
         sel: '#job',
-        val: that.person.checkNIK && that.person.checkNIK['capil_job '] ? that.person.checkNIK['capil_job '] : 'tidak tahu'
+        val: that.person.checkNIK && that.person.checkNIK['capil_job '] ? that.person.checkNIK['capil_job '] : that.person.pekerjaan ? that.person.pekerjaan : 'tidak tahu'
       })
 
       if(that.person.provinsi_domisili !== 'JAWA TENGAH'){

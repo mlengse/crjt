@@ -22,13 +22,7 @@ exports._fixTglLahir = async ({that, person}) => {
     let tglLahir = `${hari}-${bulan}-${tahun}`
     person.tanggal_lahir = that.fixTgl(tglLahir)
   }
-  let tgl = that.fixTgl(person.tanggal_lahir)
-  if(tgl.includes('date')){
-    console.log('tgl lahir', person.tanggal_lahir.length, person.tanggal_lahir)
-    console.log(person)
-  } else {
-    person.tanggal_lahir = tgl
-  }
+
   return person
 
 }

@@ -27,7 +27,12 @@ module.exports = async (isPM2) => {
       nik = sisa.shift()
       // if( id === 10  /* && exclude.indexOf(id) === -1*/)
       {
+        // console.log(app.people[nik])
         app.person = await app.upsertPerson({ person: app.people[nik] })
+
+        // if(!app.person.nama){
+        //   console.log(app.person)
+        // }
         // app.person = app.people[nik]
         app.spinner.succeed(`-----------------------------------`)
         app.spinner.succeed(`processing ${id}, ${nik} ${app.person.nama}${app.person.isKonfirm ? ' terkonfirmasi.' : '.'} tgl ag ${app.person.tanggal_pemeriksaan} Hasil: ${app.person.hasil_pemeriksaan}`)

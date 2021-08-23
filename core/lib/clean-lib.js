@@ -3,8 +3,20 @@ exports._cleanData = async ({ that }) => {
 
   for(let [id, nik] of Object.entries(Object.keys(that.people))){
     let person = that.people[nik]
+    
 
     person = await that.fixTglLahir({person})
+
+    if(person.tanggal_lahir){
+      let tgl = that.fixTgl(person.tanggal_lahir)
+      if(tgl.includes('date')){
+        console.log('tgl lahir', person.tanggal_lahir.length, person.tanggal_lahir)
+        console.log(person)
+        delete that.people[nik]
+      } else {
+        person.tanggal_lahir = tgl
+      }
+    }
 
     if(!person.no_telp_handphone || person.no_telp_handphone.split('').filter(e=>e !== '0').length < 5 ){
       person.no_telp_handphone = that.config.PHONE
@@ -16,6 +28,27 @@ exports._cleanData = async ({ that }) => {
       person.jenis_kelamin = person.jenis_kelamin__l_p
       delete person.jenis_kelamin__l_p
     }
+
+    if(person.nik.includes('#')){
+      if(person.jenis_kelamin && person.tanggal_lahir !== 'Invalid date'){
+        let name2num = Number(person.nik.split('').map( h => h.charCodeAt(0)).reduce( (acc, cur) => Number(acc) + Number(cur), 0))
+        while(name2num > 99){
+          name2num = Number(name2num.toString().split('').reduce( (acc, cur) => Number(acc) + Number(cur), 0))
+        }
+        person.nik = `4372${that.fixTgl(person.tanggal_lahir).split('-').join('')}${person.jenis_kelamin === 'L' ? '01' : '02'}${name2num < 10 ? `0${name2num}`: name2num}`
+        that.people[person.nik] = person
+      }
+      // person.validnik = false
+      // that.spinner.succeed(`${nik} => ${person.nik}`)
+      delete that.people[nik]
+    } else {
+      person.validnik = person.nik
+
+      that.people[nik] = person
+
+      // console.log(that.people[nik])
+    }
+
     if(!person.jenis_kelamin){
       person.jenis_kelamin = Number(person.nik[6]) > 3 ? 'P' : 'L'    
       // console.log(person)
@@ -88,13 +121,16 @@ exports._cleanData = async ({ that }) => {
       console.log(person)
     }
 
-    let tgl = that.fixTgl(person.tanggal_pemeriksaan)
-    if(tgl.includes('date')){
-      console.log('tgl periksa', person.tanggal_pemeriksaan.length, person.tanggal_pemeriksaan)
-      console.log(person)
+    if(person.tanggal_pemeriksaan){
+      let tgl = that.fixTgl(person.tanggal_pemeriksaan)
+      if(tgl.includes('date')){
+        console.log('tgl periksa', person.tanggal_pemeriksaan.length, person.tanggal_pemeriksaan)
+        console.log(person)
+        delete that.people[nik]
+      } else {
+        person.tanggal_pemeriksaan = tgl
+      }
     }
-
-    person.tanggal_pemeriksaan = tgl
 
     if(!person.hasil_pemeriksaan || (person.hasil_pemeriksaan && person.hasil_pemeriksaan.toLowerCase() !== 'positif' && person.hasil_pemeriksaan.toLowerCase() !== 'negatif')){
       if(person.hasil_pemeriksaan_spesimen){
@@ -112,7 +148,8 @@ exports._cleanData = async ({ that }) => {
           if(person.hasil_pemeriksaan.toLowerCase().includes('n')){
             person.hasil_pemeriksaan = 'NEGATIF'
           } else {
-            // console.log(person)
+            console.log(person)
+            delete that.people[nik]
           }
           
         } else if(person.hasil_pemeriksaan && person.hasil_pemeriksaan.length < 3) {
@@ -142,24 +179,9 @@ exports._cleanData = async ({ that }) => {
         person.isKonfirm = true
       }
       
-    if(person.nik.includes('#')){
-      let name2num = Number(person.nik.split('').map( h => h.charCodeAt(0)).reduce( (acc, cur) => Number(acc) + Number(cur), 0))
-      while(name2num > 99){
-        name2num = Number(name2num.toString().split('').reduce( (acc, cur) => Number(acc) + Number(cur), 0))
-      }
-      person.nik = `4372${that.fixTgl(person.tanggal_lahir).split('-').join('')}${person.jenis_kelamin === 'L' ? '01' : '02'}${name2num < 10 ? `0${name2num}`: name2num}`
-      // person.validnik = false
-      // that.spinner.succeed(`${nik} => ${person.nik}`)
-      delete that.people[nik]
-      that.people[person.nik] = person
-    } else {
-      person.validnik = person.nik
 
-      that.people[nik] = person
 
-      // console.log(that.people[nik])
-    }
-
+    
     // that.spinner.succeed(`${Object.keys(person)}`)
   }
 }

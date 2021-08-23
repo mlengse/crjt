@@ -132,24 +132,30 @@ exports._arangoQuery = async ({ that, aq}) => {
 exports._upsertPerson = async({ that, person}) => {
 	if(that.config.ARANGODB_DB) {
 		let jsonExist = that.getPersonJSON(person.nik)
-		// person.nama === 'ANIS PURWANTI' && console.log(jsonExist)
+		
+		// console.log(!!jsonExist)
+
 		if(!!jsonExist) {
 			person = Object.assign({}, jsonExist, person)
 		}
-    let upsertData = await that.arangoUpsert({
+    
+		let upsertData = await that.arangoUpsert({
       coll: 'people',
       doc: Object.assign({}, person, {
         _key: `${person.nik}`
       })
     })
 
-		// person.nama === 'ANIS PURWANTI' && console.log(upsertData.NEW)
+		// console.log(upsertData.NEW)
 
 		if(!!jsonExist){
 			person = Object.assign({}, person, upsertData.NEW)
-			// delete person._key
-			// delete person._id
-			// delete person._rev
+			delete person._key
+			delete person._id
+			delete person._rev
+
+			// console.log((JSON.stringify(jsonExist) !== JSON.stringify(person)))
+
 			if(JSON.stringify(jsonExist) !== JSON.stringify(person)){
 				return that.upsertPersonJSON(person)
 			} else {

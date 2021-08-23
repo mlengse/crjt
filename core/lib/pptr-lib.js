@@ -71,21 +71,22 @@ exports._jqSelect = async ({ that, sel, val, id }) => {
     await that.page.select(`select${sel}`, id)
     that.spinner.succeed(`selector ${sel} val ${id}`)
   } else {
-    // let options
+    let options
     await that.page.evaluate(e => {
       document.querySelector(e).scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'end' });
     }, sel);
 
-    // while(!options || options.length < 3){
-    let options = await that.page.evaluate( sel => {
-        return $(sel).find('option').get().map( e => ({
-          val: e.getAttribute('value'),
-          text: e.innerText
-        }))
-        // $(sel).val($(sel).find("option:contains('"+val+"')").val()).trigger('change')
-      }, sel)
-      // await that.page.waitForTimeout(100)
-    // }
+    while(!options || options.length < 3){
+      // let options = await that.page.evaluate( sel => {
+      options = await that.page.evaluate( sel => {
+          return $(sel).find('option').get().map( e => ({
+            val: e.getAttribute('value'),
+            text: e.innerText
+          }))
+          // $(sel).val($(sel).find("option:contains('"+val+"')").val()).trigger('change')
+        }, sel)
+        await that.page.waitForTimeout(100)
+    }
     
     if(val){
       that.spinner.succeed(`val ${val} options: ${options.length /**map(e => e.text) */}`)
