@@ -25,7 +25,7 @@ module.exports = async (isPM2) => {
     while(sl !== sl - sisa.length){
       id = sl - sisa.length
       nik = sisa.shift()
-      // if( id >= 681 /* && exclude.indexOf(id) === -1*/)
+      // if( id === 10  /* && exclude.indexOf(id) === -1*/)
       {
         app.person = await app.upsertPerson({ person: app.people[nik] })
         // app.person = app.people[nik]
@@ -41,7 +41,11 @@ module.exports = async (isPM2) => {
           await app.upsertPerson({ person: app.person })
         }
         if((app.person.checkNIK && app.person.checkNIK.error) || app.person.checkDuplicate || !app.person.validnik){
-          (app.person.checkDuplicate || !app.person.validnik )&& await app.handleDuplicate();
+          // console.log(app.people[nik])
+          // console.log(app.person)
+          // console.log(JSON.stringify(app.people[nik]) === JSON.stringify(app.person))
+          // console.log(!app.person.validnik, app.person.validnik, app.person.nik);
+          (app.person.checkDuplicate || !app.person.validnik ) && await app.handleDuplicate();
           (app.person.checkNIK && app.person.checkNIK.error) && await app.handleNIK();
         } 
     
