@@ -36,13 +36,13 @@ module.exports = async (isPM2) => {
         if(app.person.isKonfirm){
           app.spinner.succeed(`sisa data positif setelah cleaning ${sisa.filter(nik => app.people[nik].isKonfirm).length}`)
         }
-        if(!((app.person.checkNIK && app.person.checkNIK.error) || app.person.checkDuplicate)){
+        if(!((app.person.checkNIK && app.person.checkNIK.error) || app.person.checkDuplicate) && app.person.validnik){
           await app.inputCorJat()
           await app.upsertPerson({ person: app.person })
         }
-        if((app.person.checkNIK && app.person.checkNIK.error) || app.person.checkDuplicate){
-          app.person.checkDuplicate && app.handleDuplicate()
-          app.person.checkNIK.error && app.handleNIK()
+        if((app.person.checkNIK && app.person.checkNIK.error) || app.person.checkDuplicate || !app.person.validnik){
+          (app.person.checkDuplicate || !app.person.validnik )&& await app.handleDuplicate();
+          (app.person.checkNIK && app.person.checkNIK.error) && await app.handleNIK();
         } 
     
       }

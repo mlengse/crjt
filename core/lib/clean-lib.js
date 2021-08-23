@@ -141,16 +141,22 @@ exports._cleanData = async ({ that }) => {
       {
         person.isKonfirm = true
       }
+      
+    if(person.nik.includes('#')){
+      let name2num = Number(person.nik.split('').map( h => h.charCodeAt(0)).reduce( (acc, cur) => Number(acc) + Number(cur), 0))
+      while(name2num > 99){
+        name2num = Number(name2num.toString().split('').reduce( (acc, cur) => Number(acc) + Number(cur), 0))
+      }
+      person.nik = `4372${that.fixTgl(person.tanggal_lahir).split('-').join('')}${person.jenis_kelamin === 'L' ? '01' : '02'}${name2num < 10 ? `0${name2num}`: name2num}`
+      person.validnik = false
+      // that.spinner.succeed(`${nik} => ${person.nik}`)
+      delete that.people[nik]
+      that.people[person.nik] = person
+    } else {
+      person.validnik = nik
+      that.people[nik] = person
+    }
 
-    // if(that.people[nik]){
-    that.people[nik] = person
-    // }
-
-
-    
     // that.spinner.succeed(`${Object.keys(person)}`)
-
-
   }
-
 }
