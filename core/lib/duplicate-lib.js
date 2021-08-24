@@ -7,6 +7,8 @@ exports._handleDuplicate = async ({ that }) => {
 
   
   !that.person.validnik && that.spinner.succeed(`tak ada NIK ${that.person.nik} ${that.person.nama}`)
+
+  await that.upsertPerson({person: that.person})
 }
 
 exports._cekAllData = async ({ that }) => {
