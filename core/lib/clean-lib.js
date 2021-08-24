@@ -184,4 +184,7 @@ exports._cleanData = async ({ that }) => {
     
     // that.spinner.succeed(`${Object.keys(person)}`)
   }
+  that.spinner.succeed(`total data after cleaning ${Object.keys(that.people).length}`)
+  that.spinner.succeed(`total data positif setelah cleaning ${Object.keys(that.people).filter(nik => that.people[nik].isKonfirm).length}`)
+
 }

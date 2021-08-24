@@ -1,4 +1,5 @@
 const { Database, aql } = require('arangojs')
+const tcpPortUsed = require('tcp-port-used')
 const { 
   ARANGODB_HOST, 
   ARANGODB_PORT, 
@@ -10,6 +11,7 @@ const {
 const arango = new Database({
   url: `http://${ARANGODB_USERNAME}:${ARANGODB_PASSWORD}@${ARANGODB_HOST}:${ARANGODB_PORT}`
 });
+let dbExist
 
 exports._testDb = async ({that, db}) => {
 	try{
@@ -130,34 +132,48 @@ exports._arangoQuery = async ({ that, aq}) => {
 }
 
 exports._upsertPerson = async({ that, person}) => {
-	if(that.config.ARANGODB_DB) {
-		let jsonExist = that.getPersonJSON(person.nik)
+	if(!dbExist){
+		try{
+			dbExist = await tcpPortUsed.check(that.config.ARANGODB_PORT, that.config.ARANGODB_HOST)
+			that.spinner.succeed(`${new Date()} ${JSON.stringify(e, Object.getOwnPropertyNames(e))}`)
+		}catch(e){
+			dbExist = `${new Date()} ${`${e}` ? `${e}` : `${JSON.stringify(e, Object.getOwnPropertyNames(e))}`}`
+			that.spinner.fail(dbExist)
+		}
+	}
+	if(!dbExist.includes('Error')) {
+		let jsonExist
+		if(that.arkHas(person.nik)){
+			jsonExist = that.arkGet(person.nik)
+		}
+		// let jsonExist = that.getPersonJSON(person.nik)
 		
 		// console.log(!!jsonExist)
 
-		if(!!jsonExist) {
-			person = Object.assign({}, jsonExist, person)
-		}
-    
+		// if(!!jsonExist) {
+			// person = Object.assign({}, jsonExist, person)
+		// }
+		
 		let upsertData = await that.arangoUpsert({
-      coll: 'people',
-      doc: Object.assign({}, person, {
-        _key: `${person.nik}`
-      })
-    })
+			coll: 'people',
+			doc: Object.assign({}, person, {
+				_key: `${person.nik}`
+			})
+		})
 
 		// console.log(upsertData.NEW)
 
 		if(!!jsonExist){
-			person = Object.assign({}, person, upsertData.NEW)
+			person = Object.assign({}, jsonExist, upsertData.NEW)
 			delete person._key
 			delete person._id
 			delete person._rev
 
 			// console.log((JSON.stringify(jsonExist) !== JSON.stringify(person)))
 
-			if(JSON.stringify(jsonExist) !== JSON.stringify(person)){
-				return that.upsertPersonJSON(person)
+			if(JSON.stringify(jsonExist) !== JSON.stringify(that.person)){
+				return that.arkUpsert(person)
+				// return that.upsertPersonJSON(person)
 			} else {
 				return person
 			}
@@ -165,8 +181,13 @@ exports._upsertPerson = async({ that, person}) => {
 			return upsertData.NEW
 		}
 		// console.log(upsertData.NEW)
-  } else {
-		return that.upsertPersonJSON(person)
+	} else {
+		// if(that.arkHas()){
+			return that.arkUpsert(person)
+		// }
+		// return that.upsertPersonJSON(person)
 	}
 	// return person
+
+
 }

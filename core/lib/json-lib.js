@@ -1,5 +1,5 @@
 const FileSync = require('lowdb/adapters/FileSync')
-const people = require('lowdb')(new FileSync('./db/people.json'))
+const people = require('lowdb')(new FileSync('./db/old-db-people.json'))
 people.defaults({ people: [] }).write()   
 
 exports.getPersonJSON = nik => (people.get('people').filter({ nik }).value())[0]
