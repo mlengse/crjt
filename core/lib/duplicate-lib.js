@@ -12,37 +12,44 @@ exports._handleDuplicate = async ({ that }) => {
 }
 
 exports._cekAllData = async ({ that }) => {
-  that.spinner.succeed(`duplikasi ${that.person.checkDuplicate.error} ${that.person.checkDuplicate.message}`);
 
-  await that.loginCorJat()
+  if(!that.person.checkDuplicate.recordsFiltered){
+    await that.loginCorJat()
 
-  let filterInput = await that.page.$('#filterByNameAllCase')
-
-  if(!filterInput){
+    let filterInput = await that.page.$('#filterByNameAllCase')
+  
+    if(!filterInput){
+      await Promise.all([
+        that.page.click(`a#all-case-tab`),
+        that.waitFor({ selector: '#filterByNameAllCase'})
+      ])
+    }
+  
+    await that.closeWarning()
+  
+    await that.page.evaluate( () => document.getElementById('filterByNameAllCase').value = '')
+    await that.page.type( `input#filterByNameAllCase`,that.person.nama, { delay: 50})
+  
     await Promise.all([
-      that.page.click(`a#all-case-tab`),
-      that.waitFor({ selector: '#filterByNameAllCase'})
+      that.page.waitForResponse(async response =>{
+        if(response.url().includes(`datatable?`) && response.url().includes(that.fixedEncodeURIComponent(that.person.nama))){
+          let jsonR = await response.json();
+          if(jsonR && jsonR.data && jsonR.data.length){
+            jsonR.data = jsonR.data.map( e => Object.assign({}, e, {
+              action: undefined
+            }))
+          }
+          that.person.checkDuplicate = Object.assign({}, that.person.checkDuplicate, jsonR);
+          return true
+        }
+        return false
+      }, that.waitOpt),
+      that.page.type('input#filterByNameAllCase', String.fromCharCode(13))
     ])
+  
   }
 
-  await that.closeWarning()
-
-  await that.page.evaluate( () => document.getElementById('filterByNameAllCase').value = '')
-  await that.page.type( `input#filterByNameAllCase`,that.person.nama, { delay: 200})
-
-  await Promise.all([
-    that.page.waitForResponse(async response =>{
-      if(response.url().includes(`datatable?`) && response.url().includes(that.person.nama.split(' ').join('%20'))){
-        let jsonR = await response.json();
-        that.person.checkDuplicate = Object.assign({}, that.person.checkDuplicate, jsonR);
-        return true
-      }
-      return false
-    }, that.waitOpt),
-    that.page.type('input#filterByNameAllCase', String.fromCharCode(13))
-  ])
-
-  console.log(that.person.checkDuplicate)
+  that.spinner.succeed(`${that.person.checkDuplicate.error} ${that.person.checkDuplicate.message} ditemukan: ${that.person.checkDuplicate.recordsFiltered}`)
 
   // await that.page.waitForTimeout(100000)
 }

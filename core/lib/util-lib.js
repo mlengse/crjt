@@ -65,3 +65,9 @@ exports.editDistance = (s1, s2) => {
   }
   return costs[s2.length];
 }
+
+exports.fixedEncodeURIComponent = (str) => {
+  return encodeURIComponent(str).replace(/[!'()*]/g, function(c) {
+    return '%' + c.charCodeAt(0).toString(16);
+  });
+}

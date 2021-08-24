@@ -28,6 +28,8 @@ exports._loginCorJat = async ({ that }) => {
       loginDone && that.spinner.succeed('logged in corona jateng')
   
       await that.page.goto(`${that.config.CORJAT_URL}`, that.waitOpt)
+
+      await that.closeWarning()
     }
   
   }catch(e){
