@@ -375,26 +375,7 @@ exports._inputCorJat = async ({ that }) => {
  
 }
 
-exports._closeWarning = async ({ that, response }) => {
-  response.error && that.spinner.fail(`${response.error} ${response.message}`)
-  if(response.error === 'Duplicate') {
-    that.spinner.succeed('duplikasi')
-    that.person.checkDuplicate = response
-  }
 
-  await that.page.waitForTimeout(500)
-
-  let notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
-  if(notifWall){
-    let [btn] = await that.page.$x('//button[contains(.,"OK")]')
-    if(btn){
-      await btn.click()
-    }
-  }
-
-  // console.log('dari closeWarning')
-
-}
 
 exports._mengcovid = async ({ that }) => {
   await that.page.waitForTimeout(100)

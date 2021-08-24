@@ -224,3 +224,23 @@ exports._findXPathAndClick = async ({ that, xpath }) => {
   await that.page.waitForTimeout(100)
 }
 
+exports._closeWarning = async ({ that, response }) => {
+  response && response.error && that.spinner.fail(`${response.error} ${response.message}`)
+  if(response && response.error === 'Duplicate') {
+    that.spinner.succeed('duplikasi')
+    that.person.checkDuplicate = response
+  }
+
+  await that.page.waitForTimeout(500)
+
+  let notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
+  if(notifWall){
+    let [btn] = await that.page.$x('//button[contains(.,"OK")]')
+    if(btn){
+      await btn.click()
+    }
+  }
+
+  // console.log('dari closeWarning')
+
+}
