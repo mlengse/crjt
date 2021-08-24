@@ -13,7 +13,7 @@ exports._handleDuplicate = async ({ that }) => {
 
 exports._cekAllData = async ({ that }) => {
 
-  if(!that.person.checkDuplicate.recordsFiltered){
+  if(!that.person.checkDuplicate.recordsFiltered && !that.person.checkNIK.nama){
     await that.loginCorJat()
 
     let filterInput = await that.page.$('#filterByNameAllCase')

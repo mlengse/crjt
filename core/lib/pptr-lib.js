@@ -227,7 +227,7 @@ exports._findXPathAndClick = async ({ that, xpath }) => {
 exports._closeWarning = async ({ that, response }) => {
   response && response.error && that.spinner.fail(`${response.error} ${response.message}`)
   if(response && response.error === 'Duplicate') {
-    that.spinner.succeed('duplikasi')
+    // that.spinner.succeed('duplikasi')
     that.person.checkDuplicate = response
   }
 

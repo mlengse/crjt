@@ -336,17 +336,20 @@ exports._inputCorJat = async ({ that }) => {
               })
             ])
   
-            await that.page.waitForTimeout(500)
+            // await that.page.waitForTimeout(500)
           }
         }
       }
     }
-    notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
-    if(notifWall){
-      await that.clickBtn({
-        text: 'OK'
-      })
-    }
+
+    await that.closeWarning()
+
+    // notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
+    // if(notifWall){
+    //   await that.clickBtn({
+    //     text: 'OK'
+    //   })
+    // }
     // that.person = await that.upsertPerson({ person })
   }catch(e){
     console.log(that.person)
@@ -378,7 +381,8 @@ exports._inputCorJat = async ({ that }) => {
 
 
 exports._mengcovid = async ({ that }) => {
-  await that.page.waitForTimeout(100)
+  that.spinner.start('mengcovidkan')
+  await that.page.waitForTimeout(1000)
   let visible = false
   for(let el of await that.page.$x(`//button[contains(., "Ya")]`)){
     await that.page.evaluate(e => {
