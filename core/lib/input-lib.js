@@ -48,7 +48,7 @@ exports._inputCorJat = async ({ that }) => {
     }
 
 
-    // await that.page.waitForTimeout(1000)
+    // await that.page.waitForTimeout(500)
     
     if((that.person.checkNIK && that.person.checkNIK.error) || (that.person.checkDuplicate)){
       // await that.upsertPerson({ person })
@@ -61,15 +61,15 @@ exports._inputCorJat = async ({ that }) => {
       that.spinner.succeed(`input ${that.person.nama}`)
   
   
-      // notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
-      // if(notifWall){
-      //   // that.spinner.succeed('aku opo kae')
-      //   await Promise.all([
-      //     that.clickBtn({
-      //       text: 'OK'
-      //     }),
-      //   ])
-      // }
+      notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
+      if(notifWall){
+        // that.spinner.succeed('aku opo kae')
+        await Promise.all([
+          that.clickBtn({
+            text: 'OK'
+          }),
+        ])
+      }
     
 
       // await that.page.waitForTimeout(100)
@@ -325,7 +325,7 @@ exports._inputCorJat = async ({ that }) => {
           await that.page.evaluate( () => document.getElementById("swab_period_rdt").value = "")
           await that.page.type('#swab_period_rdt', '1')
   
-          await that.page.waitForTimeout(1000)
+          await that.page.waitForTimeout(500)
     
           if(that.response !== 'duplikasi' || !that.person.checkDuplicate) {
             !that.response && await Promise.all([
@@ -336,7 +336,7 @@ exports._inputCorJat = async ({ that }) => {
               })
             ])
   
-            await that.page.waitForTimeout(1000)
+            await that.page.waitForTimeout(500)
           }
         }
       }
@@ -382,7 +382,7 @@ exports._closeWarning = async ({ that, response }) => {
     that.person.checkDuplicate = response
   }
 
-  await that.page.waitForTimeout(1000)
+  await that.page.waitForTimeout(500)
 
   let notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
   if(notifWall){
