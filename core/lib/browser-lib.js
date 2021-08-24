@@ -18,7 +18,7 @@ exports._initBrowser = async ({ that }) => {
           
         )) {
           that.spinner.fail(`${request.url()} ${JSON.stringify(request.failure())}`)
-          // throw new Error('reload')
+          throw new Error('reload')
         }
       })
       that.page.on('response', async response => {
