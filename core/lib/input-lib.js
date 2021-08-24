@@ -33,8 +33,9 @@ exports._inputCorJat = async ({ that }) => {
     
       await Promise.all([
         that.page.waitForResponse(async response => {
-          if(response.url().includes(`check-nik?nik=${that.person.nik}`)){
+          if(response.url().includes(`check-nik`) && response.request().postData().includes(that.person.nik)){
             that.person.checkNIK = await response.json()
+            // console.log('response done')
             return true
           }
           return false
@@ -42,8 +43,12 @@ exports._inputCorJat = async ({ that }) => {
         that.find$AndClick({ $: 'button#cek-nik'}),
 
       ])
+      // console.log('selesai cari')
   
     }
+
+
+    // await that.page.waitForTimeout(1000)
     
     if((that.person.checkNIK && that.person.checkNIK.error) || (that.person.checkDuplicate)){
       // await that.upsertPerson({ person })
@@ -56,15 +61,15 @@ exports._inputCorJat = async ({ that }) => {
       that.spinner.succeed(`input ${that.person.nama}`)
   
   
-      notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
-      if(notifWall){
-        // that.spinner.succeed('aku opo kae')
-        await Promise.all([
-          that.clickBtn({
-            text: 'OK'
-          }),
-        ])
-      }
+      // notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
+      // if(notifWall){
+      //   // that.spinner.succeed('aku opo kae')
+      //   await Promise.all([
+      //     that.clickBtn({
+      //       text: 'OK'
+      //     }),
+      //   ])
+      // }
     
 
       // await that.page.waitForTimeout(100)
@@ -381,10 +386,13 @@ exports._closeWarning = async ({ that, response }) => {
 
   let notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
   if(notifWall){
-    await that.clickBtn({
-      text: 'OK'
-    })
+    let [btn] = await that.page.$x('//button[contains(.,"OK")]')
+    if(btn){
+      await btn.click()
+    }
   }
+
+  // console.log('dari closeWarning')
 
 }
 

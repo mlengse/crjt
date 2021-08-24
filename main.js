@@ -43,6 +43,7 @@ module.exports = async (isPM2) => {
         }
         if(!((app.person.checkNIK && app.person.checkNIK.error) || app.person.checkDuplicate) && app.person.validnik){
           await app.inputCorJat()
+          console.log('sudah return')
           await app.upsertPerson({ person: app.person })
         }
         if((app.person.checkNIK && app.person.checkNIK.error) || app.person.checkDuplicate || !app.person.validnik){
