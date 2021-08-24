@@ -18,11 +18,10 @@ exports._cekAllData = async ({ that }) => {
 
     let filterInput = await that.page.$('#filterByNameAllCase')
   
-    if(!filterInput){
-      await Promise.all([
-        that.page.click(`a#all-case-tab`),
-        that.waitFor({ selector: '#filterByNameAllCase'})
-      ])
+    while(!filterInput){
+      await that.page.click(`a#all-case-tab`)
+      await that.page.waitForTimeout(100)
+      filterInput = await that.page.$('#filterByNameAllCase')
     }
   
     await that.closeWarning()
