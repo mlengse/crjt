@@ -134,14 +134,14 @@ exports._arangoQuery = async ({ that, aq}) => {
 exports._upsertPerson = async({ that, person}) => {
 	if(!dbExist){
 		try{
-			dbExist = await tcpPortUsed.check(that.config.ARANGODB_PORT, that.config.ARANGODB_HOST)
-			that.spinner.succeed(`${new Date()} ${JSON.stringify(e, Object.getOwnPropertyNames(e))}`)
+			dbExist = await tcpPortUsed.check(Number(that.config.ARANGODB_PORT), that.config.ARANGODB_HOST)
+			that.spinner.succeed(`${new Date()} ${dbExist}`)
 		}catch(e){
 			dbExist = `${new Date()} ${`${e}` ? `${e}` : `${JSON.stringify(e, Object.getOwnPropertyNames(e))}`}`
 			that.spinner.fail(dbExist)
 		}
 	}
-	if(!dbExist.includes('Error')) {
+	if(dbExist || (dbExist && typeof dbExist !== "String" )) {
 		let jsonExist
 		if(that.arkHas(person.nik)){
 			jsonExist = that.arkGet(person.nik)
@@ -181,7 +181,9 @@ exports._upsertPerson = async({ that, person}) => {
 			return upsertData.NEW
 		}
 		// console.log(upsertData.NEW)
-	} else {
+	} else if(!dbExist || (dbExist && typeof dbExist === "String" && !dbExist.includes('Error'))) {
+		that.spinner.succeed(`${new Date()} ${dbExist}`)
+
 		// if(that.arkHas()){
 			return that.arkUpsert(person)
 		// }

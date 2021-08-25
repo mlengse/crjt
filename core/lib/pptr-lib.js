@@ -40,31 +40,17 @@ exports._inputIfNoVal = async ({ that, selector, val }) => {
     await that.page.evaluate( (e, val) => {
       $(e).val(val)
     }, selector, val)
-    // if(selector.toLowerCase().includes('birth')){
-    //   await that.page.evaluate(() => {
-    //   })
-    // }
   }
-  // console.log(existVal)
 }
 
 exports._selectChoice =  async ({ that, val, choice }) => {
-
   that.spinner.start(`selectChoice ${val}`)
-
   await that.waitFor({ selector: choice[val.toUpperCase()]})
-
-  // for(let c of Object.keys(choice)){
-  //   await that.waitFor({
-  //     selector: choice[c]
-  //   })
-
-  // }
-
   await that.page.$eval( choice[val.toUpperCase()], e => $(e).prop('checked', true))
 }
 
 exports._jqSelect = async ({ that, sel, val, id }) => {
+  that.spinner.start(`jqSelect ${sel} ${val ? `val ${val}` : id ? `id ${id}` : 'null'}`)
   if(id){
     await that.page.evaluate(( sel, id ) => $(sel).val(id).change(), sel, id)
     await that.page.select(`select${sel}`, id)
@@ -122,31 +108,14 @@ exports._jqSelect = async ({ that, sel, val, id }) => {
 
 exports._typeAndSelect = async ({ that, selector, val }) => {
 
-  // that.spinner.succeed(`type and select ${selector} ${val}`)
-
+  that.spinner.start(`type and select ${selector} ${val}`)
   await that.waitFor({ selector })
-
-  // that.spinner.succeed(`waitFor ${selector}`)
-
-  // await that.find$AndClick({ $: selector })
-
-  // that.spinner.succeed(`find$AndClick ${selector}`)
-
   await that.page.focus(selector)
   await that.page.click(selector)
   await that.page.waitForTimeout(100)
 
-  // await that.page.focus('input.select2-search__field')
-  // await that.page.click('input.select2-search__field')
-
-  // await that.find$AndClick({ $: 'input.select2-search__field'})
-
-  // await that.page.waitForTimeout(100)
-
   let ada
-
   let hrfs = val.split('')
-
   while(hrfs.length){
     hrf = hrfs.shift()
     await that.page.type('input.select2-search__field', hrf, { delay: 100})
@@ -154,20 +123,17 @@ exports._typeAndSelect = async ({ that, selector, val }) => {
     if(els.length) for(let el of els){
       ada = await that.page.evaluate( el => el.innerText, el)
       if(ada.toLowerCase().includes(val.toLowerCase()) && !ada.toLowerCase().includes('dirawat') ){
-        // console.log(ada)
         hrfs = []
         await el.focus()
         await el.click()
       }
     }
   }
-
-  that.spinner.succeed(`type and select ${selector} ${val}`)
-
+  // that.spinner.succeed(`type and select ${selector} ${val}`)
 }
 
 exports._find$AndClick = async ({ that, $ }) => {
-  // that.spinner.start(`findXPathAndClick ${xpath}`)
+  that.spinner.start(`find $ and click ${$}`)
   let visible = false
   while(!visible){
     for(let el of await that.page.$$($)){
@@ -176,7 +142,6 @@ exports._find$AndClick = async ({ that, $ }) => {
       }, el);
       visible = await that.isVisible({ el })
       if(visible){
-        // await el.focus()
         await el.evaluate( el => el.click())
         break
       }
@@ -199,8 +164,6 @@ exports._waitFor = async({ that, selector}) => {
 
   that.spinner.succeed(`${selector} found`)
 
-  // return el
-
 }
 
 
@@ -215,7 +178,6 @@ exports._findXPathAndClick = async ({ that, xpath }) => {
       }, el);
       visible = await that.isVisible({ el })
       if(visible){
-        // await el.focus()
         await el.evaluate( el => el.click())
         break
       }
@@ -225,12 +187,8 @@ exports._findXPathAndClick = async ({ that, xpath }) => {
 }
 
 exports._closeWarning = async ({ that, response }) => {
+  that.spinner.start('closeWarning')
   response && response.error && that.spinner.fail(`${response.error} ${response.message}`)
-  if(response && response.error === 'Duplicate') {
-    // that.spinner.succeed('duplikasi')
-    that.person.checkDuplicate = response
-  }
-
   await that.page.waitForTimeout(500)
 
   let notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
@@ -241,6 +199,8 @@ exports._closeWarning = async ({ that, response }) => {
     }
   }
 
-  // console.log('dari closeWarning')
+  if(response && response.error === 'Duplicate') {
+    that.person.checkDuplicate = response
+  }
 
 }
