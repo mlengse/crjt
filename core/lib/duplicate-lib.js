@@ -1,5 +1,4 @@
 exports._handleDuplicate = async ({ that }) => {
-  // console.log(!that.person.validnik, that.person.validnik, that.person.nik)
 
   if(that.person.checkDuplicate){
     await that.cekAllData()
@@ -16,16 +15,15 @@ exports._cekAllData = async ({ that }) => {
   if(!that.person.checkDuplicate.recordsFiltered && !that.person.checkNIK.nama){
     await that.loginCorJat()
 
-    // let close = await that.page.$('button[title="Close"]')
-    // if(close){
-    //   await that.page.click('button[title="Close"]')
-    // }
-    // await that.find$AndClick({ selector: 'button[title="Close"]'})
-
-
     let filterInput = await that.page.$('#filterByNameAllCase')
   
     while(!filterInput){
+      that.spinner.start(`get filter input`)
+      let close = await that.page.$('button[title="Close"]')
+      if(close){
+        await that.page.evaluate(() => document.querySelector('button[title="Close"]').click())
+      }
+  
       await that.page.click(`a#all-case-tab`)
       await that.page.waitForTimeout(100)
       filterInput = await that.page.$('#filterByNameAllCase')
@@ -60,5 +58,4 @@ exports._cekAllData = async ({ that }) => {
     that.spinner.succeed(`Need TL ${that.person.checkDuplicate.error} ${that.person.checkDuplicate.message} ditemukan: ${that.person.checkDuplicate.recordsFiltered}`)
   }
 
-  // await that.page.waitForTimeout(100000)
 }

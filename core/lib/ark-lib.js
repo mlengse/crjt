@@ -21,7 +21,6 @@ exports._arkImporter = async ({ that }) => {
     {
       // console.log(that.people[nik])
       that.person = await that.upsertPerson({ person: that.people[nik] })
-      // console.log(that.person)
 
       that.spinner.succeed(`-----------------------------------`)
       that.spinner.succeed(`processing ${id}, ${nik} ${that.person.nama}${that.person.isKonfirm ? ' terkonfirmasi.' : '.'} tgl ag ${that.person.tanggal_pemeriksaan} Hasil: ${that.person.hasil_pemeriksaan}`)
@@ -40,7 +39,6 @@ exports._arkImporter = async ({ that }) => {
 exports.arkHas = nik => peopledb.has(nik)
 exports.arkGet =  nik => peopledb.get(nik)
 exports.arkUpsert = person => {
-  // let person
   if(peopledb.has(person.nik)){
     person = Object.assign({}, peopledb.get(person.nik), person)
   } 

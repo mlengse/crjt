@@ -61,49 +61,45 @@ exports._jqSelect = async ({ that, sel, val, id }) => {
       document.querySelector(e).scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'end' });
     }, sel);
 
-    while(!options || options.length < 3){
-      // let options = await that.page.evaluate( sel => {
-      options = await that.page.evaluate( sel => {
+    if(val){
+      while(!options || options.length < 3){
+        options = (await that.page.evaluate( sel => {
           return $(sel).find('option').get().map( e => ({
             val: e.getAttribute('value'),
             text: e.innerText
           }))
           // $(sel).val($(sel).find("option:contains('"+val+"')").val()).trigger('change')
-        }, sel)
+        }, sel)).filter(e => (e.text && e.text !== 'null' && !e.text.toLowerCase().includes('dirawat')))
         await that.page.waitForTimeout(100)
-    }
-    
-    if(val){
-      that.spinner.succeed(`val ${val} options: ${options.length /**map(e => e.text) */}`)
-      option = options.filter( e => e 
-        && e.text 
-        && e.text.toLowerCase().split(' ').join('')
-        .split('(').join('')
-        .split(')').join('')
-        .split('/').join('')
-        .includes(
-          val.toLowerCase()
-          .split(' ').join('')
-          .split('(').join('')
-          .split(')').join('')
-          .split('/').join('')
-            ) 
-          && !e.text.toLowerCase().includes('dirawat'))
+      }
+      // that.spinner.succeed(`jqSelect ${sel} ${val ? `val ${val}` : id ? `id ${id}` : 'null'} options: ${options.length}`)
+      // that.spinner.succeed(`val ${val} options: ${options.length /**map(e => e.text) */}`)
+      options = options.map(e => {
+        e.similarity = that.similarityString(val, e.text)
+        return e
+      })
+      let option = []
+      let simArr = options.map(e => e.similarity)
+      let maxSimilarity = Math.max(...simArr)
+      // console.log(maxSimilarity, simArr, JSON.stringify(options))
+
+      while(option.length !== 1 && maxSimilarity > 0 ) {
+        // that.spinner.succeed(`${val} => ${JSON.stringify(option[0])} dari ${options.length} opt`)
+        option = options.filter( e => e.similarity &&  e.similarity === maxSimilarity )
+        if(!option.length){
+          maxSimilarity = Math.max(...options.map(e => e.similarity).filter(e => e !== maxSimilarity))
+        }
+      }
       if(option.length){
+        that.spinner.succeed(`${val} => ${JSON.stringify(option[0])} dari ${options.length} opt`)
         await that.page.evaluate( (sel, val) => $(sel).val(val).trigger('change'), sel, option[0].val)
-      } else {
-        await that.page.evaluate( (sel, val) => $(sel).val(val).trigger('change'), sel, options[0].val)
       }
     } else {
-      that.spinner.succeed(`${JSON.stringify(options[1])}`)
+      that.spinner.succeed(`${val} => ${JSON.stringify(options[1])} dari ${options.length} opt`)
       await that.page.evaluate( (sel, val) => $(sel).val(val).trigger('change'), sel, options[1].val)
     }
-    
-  
   }
-
   await that.page.waitForTimeout(100)
-
 }
 
 exports._typeAndSelect = async ({ that, selector, val }) => {
