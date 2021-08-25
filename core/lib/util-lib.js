@@ -71,3 +71,7 @@ exports.fixedEncodeURIComponent = (str) => {
     return '%' + c.charCodeAt(0).toString(16);
   });
 }
+
+exports._wait = async ({ that, time }) => {
+  return await new Promise( resolve => setTimeout(() => resolve(true), time))
+}

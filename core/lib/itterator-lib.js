@@ -12,7 +12,7 @@ exports._itterator = async ({ that }) => {
   while(sl !== sl - sisa.length){
     id = sl - sisa.length
     nik = sisa.shift()
-    // if( id === 1523  /* && exclude.indexOf(id) === -1*/)
+    if( id === 78  /* && exclude.indexOf(id) === -1*/)
     {
       that.person = await that.upsertPerson({ person: that.people[nik] })
 

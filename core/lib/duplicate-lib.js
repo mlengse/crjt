@@ -1,3 +1,5 @@
+const { cloudresourcemanager } = require("googleapis/build/src/apis/cloudresourcemanager")
+
 exports._handleDuplicate = async ({ that }) => {
 
   if(that.person.checkDuplicate){
@@ -55,7 +57,9 @@ exports._cekAllData = async ({ that }) => {
 
 
   if(that.person.checkDuplicate.recordsFiltered !== 1) {
+    console.log(that.person)
     that.spinner.succeed(`Need TL ${that.person.checkDuplicate.error} ${that.person.checkDuplicate.message} ditemukan: ${that.person.checkDuplicate.recordsFiltered}`)
+    await that.wait({ time: 10000 })
   }
 
 }
