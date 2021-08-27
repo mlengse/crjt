@@ -23,7 +23,7 @@ exports._itterator = async ({ that }) => {
       if(that.person.isKonfirm){
         that.spinner.succeed(`sisa data positif setelah cleaning ${sisa.filter(nik => that.people[nik].isKonfirm).length}`)
       }
-      if(!((that.person.checkNIK && that.person.checkNIK.error) || that.person.checkDuplicate) && that.person.validnik){
+      if(/**!((that.person.checkNIK && that.person.checkNIK.error) || that.person.checkDuplicate) &&  */ that.person.validnik){
         await that.inputCorJat()
         await that.upsertPerson({ person: that.person })
       }

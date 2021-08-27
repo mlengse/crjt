@@ -57,9 +57,27 @@ exports._cekAllData = async ({ that }) => {
 
 
   if(that.person.checkDuplicate.recordsFiltered !== 1) {
-    console.log(that.person)
-    that.spinner.succeed(`Need TL ${that.person.checkDuplicate.error} ${that.person.checkDuplicate.message} ditemukan: ${that.person.checkDuplicate.recordsFiltered}`)
-    await that.wait({ time: 10000 })
+    // console.log(that.person.checkDuplicate.data)
+    that.spinner.succeed(`Need TL ${that.person.nik} ${that.person.nama} ${that.person.checkDuplicate.error} ${that.person.checkDuplicate.message} ditemukan: ${that.person.checkDuplicate.recordsFiltered}`)
+
+    // let lastDig = that.person.nik.substring(15)
+    // // console.log(lastDig, that.person.nik)
+
+    // while( Number(lastDig) < 9 && (!that.person.checkNIK || Array.isArray(that.person.checkNIK))){
+    //   lastDig = Number(lastDig)+1
+    //   that.person.nik = `${that.person.nik.substring(0,15)}${lastDig}`
+    //   await that.checkNIK()
+    //   that.spinner.succeed(`${lastDig}, ${that.person.nik}, ${JSON.stringify(that.person.checkNIK)}`)
+    // }
+
+    // if(that.person.checkNIK && !Array.isArray(that.person.checkNIK) && !that.person.checkNIK.error){
+    //   that.spinner.start('reinput')
+    //   that.person.validnik = that.person.nik
+    //   that.person.checkDuplicate = false
+    //   await that.inputCorJat()
+    // }
+
+    // await that.wait({ time: 10000 })
   }
 
 }

@@ -131,23 +131,27 @@ exports._typeAndSelect = async ({ that, selector, val }) => {
 exports._find$AndClick = async ({ that, $ }) => {
   that.spinner.start(`find $ and click ${$}`)
   let visible = false
-  while(!visible){
-    for(let el of await that.page.$$($)){
+  let clicked = false
+  let els = await that.page.$$($)
+  num = 0
+  while(!clicked || !visible /**|| num < els.length */){
+    for(let el of els){
+      that.spinner.start(`${num} ${$} ${visible}`)
+      num++
       await that.page.evaluate(e => {
         e.scrollIntoView({ behavior: 'smooth', block: 'end', inline: 'end' });
       }, el);
       visible = await that.isVisible({ el })
       if(visible){
         await el.evaluate( el => el.click())
+        clicked = true
         break
       }
     }
-
     await that.page.waitForTimeout(100)
-  
   }
   await that.page.waitForTimeout(100)
-
+  that.spinner.start(`find $ and click ${$} done`)
 }
 
 exports._waitFor = async({ that, selector}) => {

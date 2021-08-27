@@ -5,35 +5,12 @@ exports._inputCorJat = async ({ that }) => {
     let notifWall
     await that.loginCorJat()
 
-    if((!that.person.checkNIK || (that.person.checkNIK && !that.person.checkNIK.error)) && !that.person.checkDuplicate){
-      that.spinner.start('start checkNIK')
-      let inputNIK = await that.page.$('input#nik')
-      if(!inputNIK){
-        notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
-        if(notifWall){
-          await that.clickBtn({
-            text: 'OK'
-          })
-        }
-        await that.clickBtn({ text: 'Tambah Kasus'})
-        await that.findXPathAndClick({ xpath: '//a[contains(., "WNI")]'})
-        await that.waitFor({ selector: 'input#nik'})
-      }
-      await that.page.evaluate( nik => document.getElementById("nik").value = nik, that.person.nik)
-      await Promise.all([
-        that.page.waitForResponse(async response => {
-          if(response.url().includes(`check-nik`) && response.request().postData().includes(that.person.nik)){
-            that.person.checkNIK = await response.json()
-            return true
-          }
-          return false
-        }),
-        that.find$AndClick({ $: 'button#cek-nik'}),
-      ])
-    }
+    // if((!that.person.checkNIK || (that.person.checkNIK && !that.person.checkNIK.error)) && !that.person.checkDuplicate){
+      await that.checkNIK()
+    // }
 
     if((that.person.checkNIK && that.person.checkNIK.error) || (that.person.checkDuplicate)){
-      that.spinner.start('skip input process')
+      that.spinner.succeed('skip input process')
       // await that.upsertPerson({ person })
       // that.person.checkDuplicate && that.spinner.fail(`duplikasi ${that.person.checkDuplicate.error} ${that.person.checkDuplicate.message}`)
       // that.person.checkNIK.error && that.spinner.fail(`nik sudah ada ${that.person.checkNIK.error} ${that.person.checkNIK.message}`)
@@ -44,7 +21,7 @@ exports._inputCorJat = async ({ that }) => {
       that.spinner.succeed(`input lanjut ${that.person.nama}`)
       notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
       if(notifWall){
-        // that.spinner.succeed('aku opo kae')
+        that.spinner.succeed('aku opo kae')
         await Promise.all([
           that.clickBtn({
             text: 'OK'
@@ -208,6 +185,11 @@ exports._inputCorJat = async ({ that }) => {
         await that.page.evaluate( () => document.getElementById("common_condition").value = 'baik')
         await that.page.evaluate( () => document.getElementById("treatment").value = 'isolasi')
         await that.page.$eval('#tgl_lapor', (e, tgl ) => $(e).val(tgl),  that.person.tanggal_pemeriksaan)
+        if(that.person.checkDuplicate){
+          that.spinner.start('duplikasi, skip input')
+          return
+        }
+
         await Promise.all([
           that.jqSelect({
             sel: '#status_id',
@@ -220,17 +202,19 @@ exports._inputCorJat = async ({ that }) => {
           sel: '#swab_type',
           id: '2'
         })
+        if(that.person.checkDuplicate){
+          that.spinner.start('duplikasi, skip input')
+          return
+        }
+
         if(that.person.hasil_pemeriksaan === 'POSITIF') {
           await that.find$AndClick({ $: '#resultPositif'})
         } else {
           await that.find$AndClick({ $: '#resultNegatif'})
         }
-        if(that.person.checkDuplicate){
-          that.spinner.start('duplikasi, skip input')
-          return
-        }
         await that.clickBtn({ text: 'Pilih'})
-        await that.find$AndClick({ $: 'button[data-value="B"]'})
+        await that.clickBtn({ text: 'PILIH B'})
+        // await that.find$AndClick({ $: 'button.btn.btn-select-saverity-level[data-value="B"]'})
         await that.page.waitForTimeout(100)
         if(!that.person.checkDuplicate){
           notifWall = await that.page.$('div.swal2-container.swal2-center.swal2-shown')
@@ -263,10 +247,14 @@ exports._inputCorJat = async ({ that }) => {
                 timeout:10000
               })
             ])
+            that.person.inputCorjat = true
           } else {
             that.spinner.start('skip input process')
             return
           }
+        } else {
+          that.spinner.start('duplikasi, skip input')
+          return
         }
       }
     }
