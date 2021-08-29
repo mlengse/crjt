@@ -1,4 +1,5 @@
 exports._itterator = async ({ that }) => {
+  await that.init()
   let sisa = Object.keys(that.people)
   let pos = sisa.filter(e => that.people[e].isKonfirm)
     .sort((b,a) => that.unixSrt(that.people[a].tanggal_pemeriksaan) - that.unixSrt(that.people[b].tanggal_pemeriksaan));

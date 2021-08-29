@@ -2,14 +2,13 @@ const Core = require('./core')
 
 const app = new Core()
 
-const exclude = [ 278 ]
-
 module.exports = async (isPM2) => {
   try{
-    await app.init()
+
+    await app.prolanis()
 
     // await app.arkImporter()
-    await app.itterator()
+    // await app.itterator()
 
     await app.close(isPM2)
 

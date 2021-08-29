@@ -7,6 +7,8 @@ if(process.env.BASE_DATE){
 }
 
 // moment.now = () => +new Date('2021', '2', '28');
+exports.umur = tgl => moment().diff(moment(tgl, 'DD-MM-YYYY'), 'years', false)
+exports.umurSimpus = tgl => moment().diff(moment(tgl, 'YYYY-MM-DD'), 'years', false)
 exports.unixSrt = tgl => moment(tgl, 'DD-MM-YYYY').format('x')
 exports.unixTime = () => moment().format('x')
 exports.xTimestamp = () => moment.utc().format('X')

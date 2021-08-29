@@ -116,34 +116,12 @@ exports._fetchSheet = async ( {that, sheetName, file}) => {
               objRow[headersName] = col
             }
           })
-          Object.keys(objRow).length > 6 ? rows[id] = objRow : null
+          Object.keys(objRow).length > 3 ? rows[id] = objRow : null
         }
 
       })
       
-      let filteredRows = rows.map( row => {
-        if(row.nik){
-          row.nik = row.nik.split('O').join('0')
-          row.nik = row.nik.replace(/[^0-9\.]+/g, '')
-          if(row.nik.length !== 16){
-            row.nik = row.nik.slice(0, 15)
-            while(row.nik.length < 16){
-              row.nik = row.nik+'#'
-            }
-          }
-          row.nik.length !== 16 && console.log(row.nik, row.nik.length)
-        } else if(row.nama){
-          row.nik = row.nama.split(' ').join('').slice(0, 15)
-          while(row.nik.length < 16){
-            row.nik = row.nik+'#'
-          }
-          row.nik.length !== 16 && console.log(row.nik, row.nik.length)
-        } else {
-          // console.log(row)
-        }
-        return row
-      }).filter(row => !Array.isArray(row) && row.nik && row.nik.length === 16);
-
+      let filteredRows = rows.filter(row => !Array.isArray(row))
       filteredRows.length && that.spinner.succeed(`data found file ${file} sheet ${sheetName}: ${filteredRows.length}`) 
       resolve(filteredRows)
 
@@ -176,7 +154,30 @@ exports._fetchKasus =  async ({ that }) => {
     })
   
     if(sheetsList.length) for(sheetName of sheetsList) if(!sheetName.toLowerCase().includes('rekap')){
-      for ( let fetch of await that.fetchSheet({sheetName, file})) {
+      let fetchRows = (await that.fetchSheet({sheetName, file})).map( row => {
+        if(row.nik){
+          row.nik = row.nik.split('O').join('0')
+          row.nik = row.nik.replace(/[^0-9\.]+/g, '')
+          if(row.nik.length !== 16){
+            row.nik = row.nik.slice(0, 15)
+            while(row.nik.length < 16){
+              row.nik = row.nik+'#'
+            }
+          }
+          row.nik.length !== 16 && console.log(row.nik, row.nik.length)
+        } else if(row.nama){
+          row.nik = row.nama.split(' ').join('').slice(0, 15)
+          while(row.nik.length < 16){
+            row.nik = row.nik+'#'
+          }
+          row.nik.length !== 16 && console.log(row.nik, row.nik.length)
+        } else {
+          // console.log(row)
+        }
+        return row
+      }).filter(row => row.nik && row.nik.length === 16);
+
+      for ( let fetch of fetchRows) {
         that.people[fetch.nik] = Object.assign({}, that.people[fetch.nik], fetch)
       }
     }
@@ -184,5 +185,47 @@ exports._fetchKasus =  async ({ that }) => {
   }
 
   await that.cleanData()
+
+}
+
+exports._fetchSasaran =  async ({ that }) => {
+
+  const auth = await authorize()
+
+  let files = []
+
+  that.sheets = google.sheets({version: 'v4', auth});
+
+  that.people = {
+    sasaran: [],
+    pcare: [],
+    simpus: []
+  }
+
+  that.config.SASARAN_SHEET_ID && files.push(that.config.SASARAN_SHEET_ID)
+  that.config.PCARE_SHEET_ID && files.push(that.config.PCARE_SHEET_ID)
+  that.config.SIMPUS_SHEET_ID && files.push(that.config.SIMPUS_SHEET_ID)
+
+  for(let file of files) {
+    that.spinner.start(`process file id ${file}`)
+    let sheetsList = (await that.sheets.spreadsheets.get({ 
+      spreadsheetId: file
+    })).data.sheets.map((sheet) => {
+      return sheet.properties.title
+    })
+  
+    if(sheetsList.length) for(sheetName of sheetsList) if(!sheetName.toLowerCase().includes('rekap')){
+      for ( let fetch of await that.fetchSheet({sheetName, file})) {
+        that.people[sheetName].push(fetch)
+        // if(sheetName === 'sasaran') {
+        // if(sheetName === 'pcare') {
+        // if(sheetName === 'simpus') {
+          // console.log(fetch)
+        // }
+        // that.people[fetch.nik] = Object.assign({}, that.people[fetch.nik], fetch)
+      }
+    }
+  
+  }
 
 }
