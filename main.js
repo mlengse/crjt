@@ -5,10 +5,10 @@ const app = new Core()
 module.exports = async (isPM2) => {
   try{
 
-    await app.prolanis()
+    // await app.prolanis()
 
     // await app.arkImporter()
-    // await app.itterator()
+    await app.itterator()
 
     await app.close(isPM2)
 
